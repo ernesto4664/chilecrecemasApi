@@ -36,9 +36,6 @@ Route::get('/', function () {
 Route::get('/admin/users-with-families', [UsuarioFamiliarController::class, 'getAllUsersWithFamilies'])
     ->name('admin.users_with_families');
 
-Route::resource('/admin/noticias', NoticiaController::class);
-
-
 // Rutas para la interfaz web
 Route::prefix('admin')->group(function () {
     Route::get('tags', [TagController::class, 'index'])->name('tags.index');
@@ -48,4 +45,13 @@ Route::prefix('admin')->group(function () {
     Route::get('tags/{idtags}/edit', [TagController::class, 'edit'])->name('tags.edit');
     Route::put('tags/{idtags}', [TagController::class, 'update'])->name('tags.update');
     Route::delete('tags/{idtags}', [TagController::class, 'destroy'])->name('tags.destroy');
+
+        // Rutas para noticias
+    Route::get('noticias', [NoticiaController::class, 'index'])->name('noticias.index');
+    Route::get('noticias/create', [NoticiaController::class, 'create'])->name('noticias.create');
+    Route::post('noticias', [NoticiaController::class, 'store'])->name('noticias.store');
+    Route::get('noticias/{noticia}', [NoticiaController::class, 'show'])->name('noticias.show');
+    Route::get('noticias/{noticia}/edit', [NoticiaController::class, 'edit'])->name('noticias.edit');
+    Route::put('noticias/{noticia}', [NoticiaController::class, 'update'])->name('noticias.update');
+    Route::delete('noticias/{noticia}', [NoticiaController::class, 'destroy'])->name('noticias.destroy');
 });
