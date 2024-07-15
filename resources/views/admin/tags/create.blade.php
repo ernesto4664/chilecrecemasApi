@@ -1,5 +1,7 @@
 @extends('layouts.main')
+
 @section('title', 'Crear de Tags')
+
 @section('content')
     <div class="container mt-3">
         <h1>Creación de Tag</h1>

@@ -1,17 +1,10 @@
 @extends('layouts.main')
-@section('title', 'Registro de Tags')
+
+@section('title', 'Listado de Tags')
+
 @section('content')
     <div class="container mt-3">
         <h1>Tags</h1>
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
         @if (session('success'))
             <div class="alert alert-success">
                 {{ session('success') }}
@@ -19,11 +12,11 @@
         @endif
 
         @if ($tags->isEmpty())
-            <div class="alert alert-info">
+            <div class="alert alert-info mt-3">
                 No hay etiquetas registradas.
             </div>
         @else
-            <div class="table-responsive">
+            <div class="table-responsive mt-3">
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -67,5 +60,7 @@
                 </div>
             </div>
         @endif
+
+        <a href="{{ route('tags.create') }}" class="btn btn-primary mt-3">Crear nuevo Tag</a>
     </div>
 @endsection

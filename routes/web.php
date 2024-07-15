@@ -36,6 +36,16 @@ Route::get('/', function () {
 Route::get('/admin/users-with-families', [UsuarioFamiliarController::class, 'getAllUsersWithFamilies'])
     ->name('admin.users_with_families');
 
-
-Route::resource('/admin/tags', TagController::class);
 Route::resource('/admin/noticias', NoticiaController::class);
+
+
+// Rutas para la interfaz web
+Route::prefix('admin')->group(function () {
+    Route::get('tags', [TagController::class, 'index'])->name('tags.index');
+    Route::get('tags/create', [TagController::class, 'create'])->name('tags.create');
+    Route::post('tags', [TagController::class, 'store'])->name('tags.store');
+    Route::get('tags/{idtags}', [TagController::class, 'show'])->name('tags.show');
+    Route::get('tags/{idtags}/edit', [TagController::class, 'edit'])->name('tags.edit');
+    Route::put('tags/{idtags}', [TagController::class, 'update'])->name('tags.update');
+    Route::delete('tags/{idtags}', [TagController::class, 'destroy'])->name('tags.destroy');
+});
