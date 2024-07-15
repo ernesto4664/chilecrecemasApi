@@ -3,8 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UsuarioPAuthController;
+use App\Http\Controllers\EdadFamiliarController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\ComunaController;
+use App\Http\Controllers\SemanasEmbarazoController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\UsuarioFamiliarController;
 
@@ -15,6 +17,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/login', [UsuarioPAuthController::class, 'login']);
 Route::post('/register', [UsuarioPAuthController::class, 'register']);
 
+/*rutas encontrar las regiones y las comunas*/
 Route::get('/regiones', [RegionController::class, 'index']);
 Route::get('/regiones/{id}/comunas', [ComunaController::class, 'index']);
 
@@ -30,4 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('familiars', [UsuarioFamiliarController::class, 'store']);
     Route::put('familiars/{id}', [UsuarioFamiliarController::class, 'update']);
     Route::delete('familiars/{id}', [UsuarioFamiliarController::class, 'destroy']);
+    Route::get('semanas_embarazos', [SemanasEmbarazoController::class, 'index']);
+    Route::get('edades', [EdadFamiliarController::class, 'index']); 
 });

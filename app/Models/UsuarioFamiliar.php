@@ -9,22 +9,31 @@ class UsuarioFamiliar extends Model
 {
     use HasFactory;
 
-    protected $table = 'usuario_familiars'; // Asegúrate de que coincida con la tabla de la migración
+    protected $table = 'usuario_familiars';
 
     protected $fillable = [
         'usuarioP_id',
         'nombres',
         'apellidos',
-        'edad',
+        'edad_id',
         'sexo',
         'fecha_nacimiento',
-        'semanas_embarazo',
+        'semanas_embarazo_id',
         'parentesco',
     ];
 
-    // Relación con UsuarioP
     public function usuario()
     {
         return $this->belongsTo(UsuarioP::class, 'usuarioP_id');
+    }
+
+    public function edad()
+    {
+        return $this->belongsTo(EdadFamiliar::class, 'edad_id');
+    }
+
+    public function semanasEmbarazo()
+    {
+        return $this->belongsTo(SemanasEmbarazo::class, 'semanas_embarazo_id');
     }
 }
