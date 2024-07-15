@@ -9,6 +9,8 @@ use App\Http\Controllers\ComunaController;
 use App\Http\Controllers\SemanasEmbarazoController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\UsuarioFamiliarController;
+use App\Http\Controllers\NoticiaController;
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -36,3 +38,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('semanas_embarazos', [SemanasEmbarazoController::class, 'index']);
     Route::get('edades', [EdadFamiliarController::class, 'index']); 
 });
+
+// la ruta para obtener todas las noticias
+Route::get('/noticias', [NoticiaController::class, 'getAllNoticias']);
