@@ -20,6 +20,11 @@
                 {{ session('success') }}
             </div>
         @endif
+        @if ($noticias->isEmpty())
+            <div class="alert alert-info">
+                No hay noticias registradas.
+            </div>
+        @else
         <div class="table-responsive">
             <table class="table table-bordered">
                 <thead>
@@ -43,7 +48,13 @@
                             <td>{{ $contador }}</td> <!-- Mostrar el contador -->
                             <td>{{ $noticia->titulo }}</td>
                             <td>{{ $noticia->descripcion }}</td>
-                            <td>{{ $noticia->imagen }}</td>
+                            <td>
+                                @if($noticia->imagen)
+                                    <img src="{{ asset($noticia->imagen) }}" alt="Imagen de {{ $noticia->titulo }}" style="width: 100px; height: auto;">
+                                @else
+                                    No hay imagen
+                                @endif
+                            </td>
                             <td>{{ $noticia->fecha_hora }}</td>
                             <td>{{ $noticia->status }}</td>
                             <td>{{ $noticia->privilegio }}</td>
@@ -71,5 +82,6 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 @endsection
