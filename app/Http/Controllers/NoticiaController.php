@@ -24,33 +24,31 @@ class NoticiaController extends Controller
 
 
     public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'titulo' => 'required|max:255',
-            'descripcion' => 'required',
-            'imagen' => 'nullable|url',
-            'fecha_hora' => 'nullable|date',
-            'status' => 'nullable|max:45',
-            'privilegio' => 'nullable|max:45',
-            'tags_idtags' => 'required|exists:tags,idtags',
-            'usuariop_id' => 'required|integer',
-        ]);
-    
-        // Lógica para guardar la noticia con los datos validados
-        // Ejemplo:
-        $noticia = new Noticia();
-        $noticia->titulo = $validatedData['titulo'];
-        $noticia->descripcion = $validatedData['descripcion'];
-        $noticia->imagen = $validatedData['imagen'];
-        $noticia->fecha_hora = $validatedData['fecha_hora'];
-        $noticia->status = $validatedData['status'];
-        $noticia->privilegio = $validatedData['privilegio'];
-        $noticia->tags_idtags = $validatedData['tags_idtags'];
-        $noticia->usuariop_id = $validatedData['usuariop_id'];
-        $noticia->save();
-    
-        return redirect()->route('noticias.index')->with('success', 'Noticia creada correctamente.');
+{
+    $request->validate([
+        'titulo' => 'required|string|max:500',
+        'descripcion' => 'required|string',
+        'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        'fecha_hora' => 'nullable|date',
+        'status' => 'nullable|string',
+        'privilegio' => 'nullable|string',
+        'tags_idtags' => 'nullable|integer',
+        'usuariop_id' => 'nullable|integer',
+    ]);
+
+    $data = $request->all();
+
+    if ($request->hasFile('imagen')) {
+        $imagePath = $request->file('imagen')->store('images', 'public');
+        $data['imagen'] = '/storage/' . $imagePath;
     }
+
+    Noticia::create($data);
+
+    return redirect()->route('noticias.index')->with('success', 'Noticia creada exitosamente');
+}
+
+    
     
 
     public function show($id)
@@ -73,36 +71,32 @@ class NoticiaController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Validación de los datos del formulario
-    
-
-        $validatedData = $request->validate([
-            'titulo' => 'required|max:255',
-            'descripcion' => 'required',
-            'imagen' => 'nullable|url',
+        $request->validate([
+            'titulo' => 'required|string|max:500',
+            'descripcion' => 'required|string',
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'fecha_hora' => 'nullable|date',
-            'status' => 'nullable|max:45',
-            'privilegio' => 'nullable|max:45',
-            'tags_idtags' => 'required|exists:tags,idtags',
-            'usuariop_id' => 'required|integer',
+            'status' => 'nullable|string',
+            'privilegio' => 'nullable|string',
+            'tags_idtags' => 'nullable|integer',
+            'usuariop_id' => 'nullable|integer',
         ]);
-
-        // Buscar la noticia por su ID
+    
         $noticia = Noticia::findOrFail($id);
-  
-        $noticia->titulo = $validatedData['titulo'];
-        $noticia->descripcion = $validatedData['descripcion'];
-        $noticia->imagen = $validatedData['imagen'];
-        $noticia->fecha_hora = $validatedData['fecha_hora'];
-        $noticia->status = $validatedData['status'];
-        $noticia->privilegio = $validatedData['privilegio'];
-        $noticia->tags_idtags = $validatedData['tags_idtags'];
-        $noticia->usuariop_id = $validatedData['usuariop_id'];
-        $noticia->save();
-
-        // Redirigir a una vista de confirmación, por ejemplo
-        return redirect()->route('noticias.show', $noticia->idnoticia);
+        $data = $request->all();
+    
+        if ($request->hasFile('imagen')) {
+           
+            // Guardar la nueva imagen
+            $imagePath = $request->file('imagen')->store('images', 'public');
+            $data['imagen'] = '/storage/' . $imagePath;
+        }
+    
+        $noticia->update($data);
+    
+        return redirect()->route('noticias.index')->with('success', 'Noticia actualizada exitosamente');
     }
+    
 
     
 
