@@ -20,6 +20,7 @@ class UsuarioFamiliar extends Model
         'fecha_nacimiento',
         'semanas_embarazo_id',
         'parentesco',
+        'tipo_registro'
     ];
 
     public function usuario()

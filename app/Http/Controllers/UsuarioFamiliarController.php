@@ -39,6 +39,7 @@ class UsuarioFamiliarController extends Controller
         $validator = Validator::make($request->all(), [
             'nombres' => 'required|string|max:255',
             'apellidos' => 'required|string|max:255',
+            'tipo_registro' => 'string',
             'sexo' => 'string|in:M,F,O',
             'fecha_nacimiento' => 'date',
             'semanas_embarazo_id' => 'nullable|exists:semanas_embarazos,id',
@@ -76,6 +77,7 @@ class UsuarioFamiliarController extends Controller
         $validator = Validator::make($request->all(), [
             'nombres' => 'required|string|max:255',
             'apellidos' => 'required|string|max:255',
+            'tipo_registro' => 'string', // Asegúrate de validar este campo
             'sexo' => 'string|in:M,F,O',
             'fecha_nacimiento' => 'date',
             'semanas_embarazo_id' => 'nullable|exists:semanas_embarazos,id',
