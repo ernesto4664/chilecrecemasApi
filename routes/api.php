@@ -7,6 +7,8 @@ use App\Http\Controllers\RegionController;
 use App\Http\Controllers\ComunaController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\UsuarioFamiliarController;
+use App\Http\Controllers\NoticiaController;
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -31,3 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('familiars/{id}', [UsuarioFamiliarController::class, 'update']);
     Route::delete('familiars/{id}', [UsuarioFamiliarController::class, 'destroy']);
 });
+
+// la ruta para obtener todas las noticias
+Route::get('/noticias', [NoticiaController::class, 'getAllNoticias']);
