@@ -5,21 +5,26 @@ $(document).ready(function() {
         $(this).find(".right").toggleClass("fa-caret-up fa-caret-down");
     });
 });
-document.addEventListener('DOMContentLoaded', function() {
-    const submenuToggles = document.querySelectorAll('.submenu-toggle');
-    const menuToggle = document.getElementById('menu-toggle');
-    const menu = document.getElementById('menu');
+document.addEventListener('DOMContentLoaded', function () {
+    // Toggle main menu
+    document.getElementById('menu-toggle').addEventListener('click', function () {
+        document.getElementById('menu').classList.toggle('open');
+    });
 
-    submenuToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(event) {
-            event.preventDefault();
-            const parentItem = this.parentElement;
-            parentItem.classList.toggle('active');
+    // Toggle submenus
+    var submenuToggles = document.querySelectorAll('.submenu-toggle');
+    submenuToggles.forEach(function (toggle) {
+        toggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            var submenu = this.nextElementSibling;
+            submenu.classList.toggle('open');
         });
     });
-
-    menuToggle.addEventListener('click', function() {
-        menu.classList.toggle('active');
-    });
 });
+
+
+
+
+
+
 

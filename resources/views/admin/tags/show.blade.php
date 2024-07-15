@@ -1,8 +1,8 @@
 @extends('layouts.main')
 @section('title', 'Crear de Tags')
 @section('content')
-    <div class="container">
-        <h1>Tag Details</h1>
+    <div class="container mt-3">
+        <h1>Tag Detalle</h1>
         <table class="table">
             <tr>
                 <th>ID:</th>
@@ -17,6 +17,6 @@
                 <td>{{ $tag->prioridad }}</td>
             </tr>
         </table>
-        <a href="{{ route('tags.index') }}" class="btn btn-primary">Back</a>
+        <a href="{{ route('tags.index') }}" class="btn btn-primary">Regresar</a>
     </div>
 @endsection

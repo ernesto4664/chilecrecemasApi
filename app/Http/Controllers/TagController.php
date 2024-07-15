@@ -24,12 +24,16 @@ class TagController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'prioridad' => 'required',
+        ]);
         $tag = new Tag();
         $tag->nombre = $request->nombre;
         $tag->prioridad = $request->prioridad;
         $tag->save();
 
-        return redirect()->route('tags.index');
+        return redirect()->route('tags.index')->with('success', 'Tag creado exitosamente');
     }
 
     public function show($id)
@@ -46,20 +50,26 @@ class TagController extends Controller
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'prioridad' => 'required|integer|between:1,5',
+        ]);
+
         $tag = Tag::findOrFail($id);
         $tag->nombre = $request->nombre;
         $tag->prioridad = $request->prioridad;
         $tag->save();
 
-        return redirect()->route('tags.index');
+        return redirect()->route('tags.index')->with('success', 'Tag actualizado exitosamente');
     }
+
 
     public function destroy($id)
     {
         $tag = Tag::findOrFail($id);
         $tag->delete();
 
-        return redirect()->route('tags.index');
+        return redirect()->route('tags.index')->with('success', '¡La etiqueta se eliminó correctamente!');
     }
 }
 

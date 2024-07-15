@@ -13,9 +13,7 @@ nav ul {
 	margin: 0;
 	padding: 0;
 }
-nav ul li {
-  /* Sub Menu */
-}
+
 nav ul li a {
 	display: block;
 	padding: 10px 15px;
@@ -67,7 +65,7 @@ body {
 }
 
 .menu {
-    width: 250px;
+    width: auto;
     background-color: #333;
     color: #fff;
     overflow: hidden;
@@ -129,3 +127,72 @@ body {
         padding-left: 20px;
     }
 }
+/* Estilos para el menú */
+.menu-container {
+    position: relative;
+}
+
+.menu-toggle {
+    cursor: pointer;
+    font-size: 1.5em;
+    display: none; /* Será visible solo en dispositivos móviles */
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-item {
+    position: relative;
+}
+
+.submenu {
+    display: none;
+    flex-direction: column;
+    padding-left: 20px;
+}
+
+.menu-item .submenu-toggle::after {
+    content: ' ▼';
+}
+
+.menu-item.active > a {
+    font-weight: bold;
+}
+
+.menu-item.active .submenu {
+    display: flex;
+}
+
+.menu-item .submenu .active {
+    font-weight: bold;
+    color: red; /* Puedes ajustar esto según tu necesidad */
+}
+
+@media (max-width: 768px) {
+    .menu {
+        display: none;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .menu.menu-visible {
+        display: flex;
+        flex-direction: column;
+    }
+}
+.submenu {
+    display: none;
+}
+
+.submenu.open {
+    display: block;
+}
+
+.menu-item.active > a.submenu-toggle {
+    font-weight: bold;
+}
+
