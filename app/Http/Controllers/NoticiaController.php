@@ -48,9 +48,6 @@ class NoticiaController extends Controller
     return redirect()->route('noticias.index')->with('success', 'Noticia creada exitosamente');
 }
 
-    
-    
-
     public function show($id)
     {
         $noticia = Noticia::findOrFail($id);
@@ -58,7 +55,6 @@ class NoticiaController extends Controller
 
         return view('admin.noticia.show', compact('noticia', 'tags'));
     }
-
 
     public function edit($id)
     {
@@ -97,9 +93,6 @@ class NoticiaController extends Controller
         return redirect()->route('noticias.index')->with('success', 'Noticia actualizada exitosamente');
     }
     
-
-    
-
     public function destroy(Noticia $noticia)
     {
         $noticia->delete();
@@ -112,4 +105,10 @@ class NoticiaController extends Controller
         $noticias = Noticia::all();
         return response()->json($noticias);
     }
+
+    public function getNoticiaById($id)
+{
+    $noticia = Noticia::findOrFail($id);
+    return response()->json($noticia);
+}
 }

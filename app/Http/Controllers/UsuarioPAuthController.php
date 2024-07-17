@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\UsuarioP;
+use App\Models\TipoDeRegistro;
+use App\Models\UsuarioFamiliar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class UsuarioPAuthController extends Controller
 {
@@ -17,53 +21,61 @@ class UsuarioPAuthController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
-    
-        // Registra todos los datos de la solicitud para depuración
+
         Log::info('Datos recibidos:', $request->except('password'));
-    
-        // Busca el usuario por email
+
         $user = UsuarioP::where('email', $request->email)->first();
-    
-        // Verifica si el usuario existe y la contraseña es correcta
+
         if (!$user || !Hash::check($request->password, $user->password)) {
             Log::info('Intento de inicio de sesión fallido para el email: ' . $request->email);
-            return response()->json([
-                'message' => 'Las credenciales proporcionadas son incorrectas.'
-            ], 422);
+            return response()->json(['message' => 'Las credenciales proporcionadas son incorrectas.'], 422);
         }
-    
-        // Genera un token personalizado para el usuario
+
         $token = $user->createToken('MyAppToken')->plainTextToken;
-    
+
         return response()->json(['token' => $token], 200);
     }
 
     public function register(Request $request)
     {
-        $request->validate([
-            'nombres' => 'required|string',
-            'apellidos' => 'required|string',
-            'email' => 'required|email|unique:usuariop,email', // Corregido para usar 'usuariop'
-            'password' => 'required|min:6|confirmed',
-            'edad' => 'required|integer',
-            'region_id' => 'required|integer',
-            'comuna_id' => 'required|integer',
+        $validator = Validator::make($request->all(), [
+            'nombres' => 'required|string|max:255',
+            'apellidos' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:usuariop,email',
+            'password' => 'required|string|min:8|confirmed',
+            'password_confirmation' => 'required|string|min:8', // Asegúrate de validar la confirmación de contraseña
+            'fecha_nacimiento' => 'required|date',
+            'selectedRegionId' => 'required|integer',
+            'selectedComunaId' => 'required|integer',
         ]);
-
-        // Crea un nuevo usuario
-        $usuario = UsuarioP::create([
-            'nombres' => $request->nombres,
-            'apellidos' => $request->apellidos,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'edad' => $request->edad,
-            'region_id' => $request->region_id,
-            'comuna_id' => $request->comuna_id,
-        ]);
-
-        // Genera un token para el nuevo usuario
-        $token = $usuario->createToken('MyAppToken')->plainTextToken;
-
-        return response()->json(['usuario' => $usuario, 'token' => $token], 201);
+    
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+    
+        try {
+            $usuario = new UsuarioP();
+            $usuario->nombres = $request->nombres;
+            $usuario->apellidos = $request->apellidos;
+            $usuario->email = $request->email;
+            $usuario->password = Hash::make($request->password);
+            $usuario->fecha_nacimiento = $request->fecha_nacimiento;
+            $usuario->region_id = $request->selectedRegionId;
+            $usuario->comuna_id = $request->selectedComunaId;
+            $usuario->save();
+    
+            return response()->json(['message' => 'Usuario registrado correctamente'], 201);
+        } catch (\Exception $e) {
+            Log::error('Error al registrar usuario: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al registrar usuario'], 500);
+        }
     }
+
+    public function checkGestanteUsed($userId)
+{
+    $hasGestante = UsuarioFamiliar::where('usuarioP_id', $userId)
+                                  ->where('tipoderegistro_id', 1) // Assuming 1 is the ID for 'gestante'
+                                  ->exists();
+    return response()->json($hasGestante);
+}
 }

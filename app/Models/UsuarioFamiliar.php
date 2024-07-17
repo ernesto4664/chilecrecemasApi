@@ -20,7 +20,7 @@ class UsuarioFamiliar extends Model
         'fecha_nacimiento',
         'semanas_embarazo_id',
         'parentesco',
-        'tipo_registro'
+        'tipoderegistro_id'
     ];
 
     public function usuario()
@@ -37,4 +37,9 @@ class UsuarioFamiliar extends Model
     {
         return $this->belongsTo(SemanasEmbarazo::class, 'semanas_embarazo_id');
     }
+
+    public function tipoDeRegistro()
+{
+    return $this->belongsTo(TipoDeRegistro::class, 'tipoderegistro_id');
+}
 }

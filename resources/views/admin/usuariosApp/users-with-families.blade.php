@@ -9,6 +9,8 @@
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Edad</th>
+                <th>Región</th>
+                <th>Comuna</th>
                 <th>Familiares</th>
             </tr>
         </thead>
@@ -17,7 +19,9 @@
                 <tr>
                     <td>{{ $usuario->nombres }} {{ $usuario->apellidos }}</td>
                     <td>{{ $usuario->email }}</td>
-                    <td>{{ $usuario->edad }}</td>
+                    <td>{{ $usuario->edad }} años</td>
+                    <td>{{ $usuario->region ? $usuario->region->nombre : 'No aplica' }}</td>
+                    <td>{{ $usuario->comuna ? $usuario->comuna->nombre : 'No aplica' }}</td>
                     <td>
                         @if($usuario->familiares->isEmpty())
                             <p>No hay familiares registrados.</p>
@@ -28,8 +32,8 @@
                                         {{ $familiar->nombres }} {{ $familiar->apellidos }} - {{ $familiar->parentesco }}
                                         ({{ $familiar->edad }} años, Sexo: {{ $familiar->sexo }},
                                         Fecha de Nacimiento: {{ $familiar->fecha_nacimiento }})
-                                        @if($familiar->semanas_embarazo)
-                                            , Semanas de Embarazo: {{ $familiar->semanas_embarazo }}
+                                        @if($familiar->semanasEmbarazo)
+                                            , Semanas de Embarazo: {{ $familiar->semanasEmbarazo->semana }}
                                         @endif
                                     </li>
                                 @endforeach

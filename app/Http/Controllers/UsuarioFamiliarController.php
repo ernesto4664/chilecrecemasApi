@@ -20,6 +20,11 @@ class UsuarioFamiliarController extends Controller
             $userId = Auth::id();
             Log::info('Obteniendo familiares para el usuario con ID: ' . $userId);
             $familiares = UsuarioFamiliar::with(['semanasEmbarazo'])->where('usuarioP_id', $userId)->get();
+            foreach ($familiares as $familiar) {
+                if ($familiar->fecha_nacimiento) {
+                    $familiar->edad = Carbon::parse($familiar->fecha_nacimiento)->age;
+                }
+            }
             Log::info('Familiares obtenidos: ' . $familiares->toJson());
             return response()->json($familiares, 200);
         } catch (\Exception $e) {
@@ -30,39 +35,40 @@ class UsuarioFamiliarController extends Controller
 
     public function getAllUsersWithFamilies()
     {
-        $usuarios = UsuarioP::with('familiares')->get();
+        $usuarios = UsuarioP::with(['familiares.semanasEmbarazo', 'region', 'comuna'])->get();
         return view('admin.usuariosApp.users-with-families', compact('usuarios'));
     }
 
     public function store(Request $request)
     {
+        Log::info('Datos recibidos para añadir familiar: ' . json_encode($request->all()));
         $validator = Validator::make($request->all(), [
             'nombres' => 'required|string|max:255',
             'apellidos' => 'required|string|max:255',
-            'tipo_registro' => 'string',
-            'sexo' => 'string|in:M,F,O',
-            'fecha_nacimiento' => 'date',
-            'semanas_embarazo_id' => 'nullable|exists:semanas_embarazos,id',
-            'parentesco' => 'string|max:255',
+            'sexo' => 'string|max:1',
+            'fecha_nacimiento' => 'required|date',
+            'semanas_embarazo_id' => 'nullable|integer',
+            'parentesco' => 'nullable|string|max:255',
+            'tipoderegistro_id' => 'integer',
+            'usuarioP_id' => 'required|integer'
         ]);
-
+    
         if ($validator->fails()) {
             Log::error('Error de validación al añadir familiar: ' . json_encode($validator->errors()));
             return response()->json(['errors' => $validator->errors()], 422);
         }
-
+    
         try {
             $userId = Auth::id();
             Log::info('Añadiendo familiar para el usuario con ID: ' . $userId);
             $data = $request->all();
             $data['usuarioP_id'] = $userId;
-            $data['edad'] = Carbon::parse($request->fecha_nacimiento)->age; // Calcula la edad a partir de la fecha de nacimiento
-
-            // Proporcionar un valor por defecto para 'parentesco' si no está presente
+            $data['edad'] = Carbon::parse($request->fecha_nacimiento)->age;
+    
             if (!isset($data['parentesco'])) {
                 $data['parentesco'] = 'No aplica';
             }
-
+    
             $familiar = UsuarioFamiliar::create($data);
             Log::info('Familiar añadido: ' . $familiar->toJson());
             return response()->json($familiar, 201);
@@ -74,39 +80,57 @@ class UsuarioFamiliarController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Log the received data for updating a family member
+        Log::info('Datos recibidos para actualizar familiar: ' . json_encode($request->all()));
+    
+        // Validate the request data
         $validator = Validator::make($request->all(), [
-            'nombres' => 'required|string|max:255',
-            'apellidos' => 'required|string|max:255',
-            'tipo_registro' => 'string', // Asegúrate de validar este campo
-            'sexo' => 'string|in:M,F,O',
+            'nombres' => 'string|max:255',
+            'apellidos' => 'string|max:255',
+            'sexo' => 'string|max:1',
             'fecha_nacimiento' => 'date',
-            'semanas_embarazo_id' => 'nullable|exists:semanas_embarazos,id',
-            'parentesco' => 'string|max:255',
+            'semanas_embarazo_id' => 'nullable|integer',
+            'parentesco' => 'nullable|string|max:255',
+            'tipoderegistro_id' => 'integer',
+            'usuarioP_id' => 'integer'
         ]);
-
+    
+        // If validation fails, log the errors and return a 422 response
         if ($validator->fails()) {
             Log::error('Error de validación al actualizar familiar: ' . json_encode($validator->errors()));
             return response()->json(['errors' => $validator->errors()], 422);
         }
-
+    
         try {
+            // Get the authenticated user's ID
             $userId = Auth::id();
             Log::info('Actualizando familiar para el usuario con ID: ' . $userId);
+    
+            // Find the family member by ID and user ID
             $familiar = UsuarioFamiliar::where('usuarioP_id', $userId)->findOrFail($id);
-
-            $data = $request->all();
-            $data['edad'] = Carbon::parse($request->fecha_nacimiento)->age; // Calcula la edad a partir de la fecha de nacimiento
-
-                // Proporcionar un valor por defecto para 'parentesco' si no está presente
-                if (!isset($data['parentesco'])) {
-                    $data['parentesco'] = 'No aplica';
-                }
-
+    
+            // Get the validated data
+            $data = $validator->validated();
+    
+            // Calculate the age from the birthdate
+            $data['edad'] = Carbon::parse($data['fecha_nacimiento'])->age;
+    
+            // Provide a default value for 'parentesco' if not present
+            if (!isset($data['parentesco'])) {
+                $data['parentesco'] = 'No aplica';
+            }
+    
+            // Update the family member with the validated data
             $familiar->update($data);
             Log::info('Familiar actualizado: ' . $familiar->toJson());
+    
+            // Return a 200 response with the updated family member
             return response()->json($familiar, 200);
         } catch (\Exception $e) {
+            // Log any exception that occurs during the update process
             Log::error('Error al actualizar familiar: ' . $e->getMessage());
+    
+            // Return a 500 response if an error occurs
             return response()->json(['error' => 'Error al actualizar familiar'], 500);
         }
     }

@@ -10,6 +10,7 @@ use App\Http\Controllers\SemanasEmbarazoController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\UsuarioFamiliarController;
 use App\Http\Controllers\NoticiaController;
+use App\Http\Controllers\TipoDeRegistroController;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -22,6 +23,11 @@ Route::post('/register', [UsuarioPAuthController::class, 'register']);
 /*rutas encontrar las regiones y las comunas*/
 Route::get('/regiones', [RegionController::class, 'index']);
 Route::get('/regiones/{id}/comunas', [ComunaController::class, 'index']);
+
+/*ruta para encontrar los tipos de registro*/
+Route::get('/tipos-de-registro', [TipoDeRegistroController::class, 'index']);
+
+Route::get('/check-gestante-used/{userId}', [UsuarioPAuthController::class, 'checkGestanteUsed']);
 
 /*rutas para redes sociales*/
 Route::get('login/google', [SocialAuthController::class, 'redirectToGoogle']);
@@ -43,3 +49,5 @@ Route::apiResource('tags', TagController::class);
 
 // la ruta para obtener todas las noticias
 Route::get('/noticias', [NoticiaController::class, 'getAllNoticias']);
+
+Route::get('/noticias/{id}', [NoticiaController::class, 'getNoticiaById']);
