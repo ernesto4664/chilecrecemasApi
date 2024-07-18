@@ -14,4 +14,9 @@ class SemanasEmbarazo extends Model
     protected $fillable = [
         'semana',
     ];
+
+    public function familiares()
+    {
+        return $this->hasMany(UsuarioFamiliar::class, 'semanas_embarazo_id');
+    }
 }

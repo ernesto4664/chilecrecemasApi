@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Carbon\Carbon;
 
 class UsuarioP extends Authenticatable
 {
@@ -23,7 +24,7 @@ class UsuarioP extends Authenticatable
         'apellidos',
         'email',
         'password',
-        'edad',
+        'fecha_nacimiento',
         'region_id',
         'comuna_id',
     ];
@@ -57,5 +58,20 @@ class UsuarioP extends Authenticatable
     public function familiares()
     {
         return $this->hasMany(UsuarioFamiliar::class, 'usuarioP_id');
+    }
+
+    public function region()
+    {
+        return $this->belongsTo(Region::class, 'region_id');
+    }
+
+    public function comuna()
+    {
+        return $this->belongsTo(Comuna::class, 'comuna_id');
+    }
+
+    public function getEdadAttribute()
+    {
+        return Carbon::parse($this->fecha_nacimiento)->age;
     }
 }
