@@ -111,4 +111,11 @@ class NoticiaController extends Controller
     $noticia = Noticia::findOrFail($id);
     return response()->json($noticia);
 }
+
+public function getNoticiasPaginadas(Request $request)
+{
+    $limit = $request->input('limit', 10);
+    $noticias = Noticia::paginate($limit);
+    return response()->json($noticias);
+}
 }

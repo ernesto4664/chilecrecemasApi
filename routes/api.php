@@ -49,5 +49,5 @@ Route::apiResource('tags', TagController::class);
 
 // la ruta para obtener todas las noticias
 Route::get('/noticias', [NoticiaController::class, 'getAllNoticias']);
-
+Route::get('/noticias-paginadas', [NoticiaController::class, 'getNoticiasPaginadas']);
 Route::get('/noticias/{id}', [NoticiaController::class, 'getNoticiaById']);
