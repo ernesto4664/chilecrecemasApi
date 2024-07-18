@@ -39,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('edades', [EdadFamiliarController::class, 'index']); 
 });
 
-Route::apiResource('tags', TagController::class);
+Route::apiResource('/tagss', TagController::class);
 
 // la ruta para obtener todas las noticias
 Route::get('/noticias', [NoticiaController::class, 'getAllNoticias']);

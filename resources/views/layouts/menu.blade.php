@@ -3,11 +3,11 @@
         ☰
     </div>
     <div class="menu" id="menu">
-        <div class="menu-item {{ Request::routeIs('noticias.*') ? 'active' : '' }}">
+        <div class="menu-item ">
             <a href="#" class="submenu-toggle">Noticia Generales</a>
-            <div class="submenu {{ Request::routeIs('noticias.*') || Request::routeIs('tags.index')  || Request::routeIs('tags.create')  ? 'open' : '' }}">
+            <div class="submenu {{ Request::routeIs('noticias.*') || Request::routeIs('tags.*') ? 'open' : '' }}">
                 <div class="menu-item {{ Request::routeIs('noticias.index') || Request::routeIs('noticias.create') ? 'active' : '' }}">
-                    <a href="#" class="submenu-toggle {{ Request::routeIs('noticias.index') || Request::routeIs('noticias.create') ? 'active' : '' }}">Noticias Gobales</a>
+                    <a href="#" class="submenu-toggle {{ Request::routeIs('noticias.index') || Request::routeIs('noticias.create') ? 'active' : '' }}">Noticias Globales</a>
                     <div class="submenu {{ Request::routeIs('noticias.index') || Request::routeIs('noticias.create') ? 'open' : '' }}">
                         <a href="{{ route('noticias.create') }}" class="{{ Request::routeIs('noticias.create') ? 'active' : '' }}">Crear</a>
                         <a href="{{ route('noticias.index') }}" class="{{ Request::routeIs('noticias.index') ? 'active' : '' }}">Listar</a>
@@ -30,7 +30,3 @@
         </div>
     </div>
 </div>
-
-
-
-

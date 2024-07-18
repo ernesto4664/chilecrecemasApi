@@ -1,14 +1,7 @@
-$(document).ready(function() {
-    $('.sub-menu ul').hide();
-    $(".sub-menu a").click(function () {
-        $(this).parent(".sub-menu").children("ul").slideToggle("100");
-        $(this).find(".right").toggleClass("fa-caret-up fa-caret-down");
-    });
-});
 document.addEventListener('DOMContentLoaded', function () {
     // Toggle main menu
     document.getElementById('menu-toggle').addEventListener('click', function () {
-        document.getElementById('menu').classList.toggle('open');
+        document.getElementById('menu').classList.toggle('menu-visible');
     });
 
     // Toggle submenus
@@ -21,10 +14,3 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
-
-
-
-
-
-
-

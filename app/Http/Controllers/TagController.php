@@ -30,6 +30,7 @@ class TagController extends Controller
         $tag->save();
 
         return redirect()->route('tags.index')->with('success', 'Tag creado exitosamente.');
+        
     }
 
     public function create()

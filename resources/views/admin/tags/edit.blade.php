@@ -9,13 +9,13 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="nombre">Nombre:</label>
                             <input type="text" name="nombre" id="nombre" class="form-control" value="{{ old('nombre', $tag->nombre) }}" required>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="prioridad">Prioridad:</label>
                             <select class="form-select" name="prioridad" id="prioridad" required>
                                 <option value="" disabled>Seleccione uno</option>
@@ -28,7 +28,7 @@
                         </div>
                     </div>
                     <div class="col-md-12 mt-2">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <button type="submit" class="btn btn-primary mt-3">Guardar Cambios</button>
                         </div>
                     </div>

@@ -21,13 +21,13 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="nombre">Nombre:</label>
                             <input type="text" name="nombre" id="nombre" class="form-control" required value="{{ old('nombre') }}">
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="prioridad">Prioridad:</label>
                             <select name="prioridad" id="prioridad" class="form-select" aria-label="Default select example" required>
                                 <option selected disabled value="">Seleccione Uno</option>
@@ -40,8 +40,8 @@
                         </div>
                     </div>
                     <div class="col-md-12 mt-2">
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        <div class="form-group mb-3">
+                            <button type="submit" class="btn btn-primary mb-5">Guardar</button>
                         </div>
                     </div>
                 </div>

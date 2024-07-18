@@ -35,7 +35,7 @@
                         <th>Imagen</th>
                         <th>Fecha y Hora</th>
                         <th>Status</th>
-                        <th>Privilegio</th>
+                        <th>Prioridad</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -47,7 +47,12 @@
                         <tr>
                             <td>{{ $contador }}</td> <!-- Mostrar el contador -->
                             <td>{{ $noticia->titulo }}</td>
-                            <td>{{ $noticia->descripcion }}</td>
+                            <td>
+                                @php
+                                    $descripcion_cortada = Str::limit($noticia->descripcion, 100, '...'); // Limitar a 100 caracteres con puntos suspensivos
+                                    echo $descripcion_cortada;
+                                @endphp
+                            </td>
                             <td>
                                 @if($noticia->imagen)
                                     <img src="{{ asset($noticia->imagen) }}" alt="Imagen de {{ $noticia->titulo }}" style="width: 100px; height: auto;">

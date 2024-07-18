@@ -5,6 +5,15 @@
 @section('content')
     <div class="container mt-3">
         <h1>Tags</h1>
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         @if (session('success'))
             <div class="alert alert-success">
                 {{ session('success') }}
@@ -60,7 +69,5 @@
                 </div>
             </div>
         @endif
-
-        <a href="{{ route('tags.create') }}" class="btn btn-primary mt-3">Crear nuevo Tag</a>
     </div>
 @endsection
