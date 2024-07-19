@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Log;
 
 Paginator::useBootstrap();
 
@@ -13,8 +12,8 @@ class TagController extends Controller
 {
     public function index()
     {
-        $tags = Tag::paginate(10); // Ajusta el número según la cantidad de resultados que quieras por página
-        return view('admin.tags.index', compact('tags'));
+        $tags = Tag::paginate(10);
+        return response()->json($tags);
     }
 
     public function store(Request $request)
@@ -24,53 +23,33 @@ class TagController extends Controller
             'prioridad' => 'required|integer',
         ]);
 
-        $tag = new Tag();
-        $tag->nombre = $request->nombre;
-        $tag->prioridad = $request->prioridad;
-        $tag->save();
+        $tag = Tag::create($request->all());
 
-        return redirect()->route('tags.index')->with('success', 'Tag creado exitosamente.');
-        
+        return response()->json($tag, 201);
     }
 
-    public function create()
+    public function show($id)
     {
-        return view('admin.tags.create');
+        $tag = Tag::findOrFail($id);
+        return response()->json($tag);
     }
 
-
-    public function show($idtags)
-    {
-        $tag = Tag::findOrFail($idtags);
-        return view('admin.tags.show', compact('tag'));
-    }
-
-    public function edit($idtags)
-    {
-        $tag = Tag::findOrFail($idtags);
-        return view('admin.tags.edit', compact('tag'));
-    }
-
-    public function update(Request $request, $idtags)
+    public function update(Request $request, $id)
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
             'prioridad' => 'required|integer|between:1,5',
         ]);
 
-        $tag = Tag::findOrFail($idtags);
-        $tag->nombre = $request->nombre;
-        $tag->prioridad = $request->prioridad;
-        $tag->save();
+        $tag = Tag::findOrFail($id);
+        $tag->update($request->all());
 
-        return redirect()->route('tags.index')->with('success', 'Tag actualizado exitosamente');
+        return response()->json($tag);
     }
 
-    public function destroy($idtags)
+    public function destroy($id)
     {
-        $tag = Tag::findOrFail($idtags);
-        $tag->delete();
-
-        return redirect()->route('tags.index')->with('success', '¡La etiqueta se eliminó correctamente!');
+        Tag::destroy($id);
+        return response()->json(null, 204);
     }
 }
