@@ -33,8 +33,8 @@ Route::get('/', function () {
 
 
 // Ruta para acceder a los usuarios registrados desde la App movil y a su grupo familiar
-Route::get('/admin/users-with-families', [UsuarioFamiliarController::class, 'getAllUsersWithFamilies'])
-    ->name('admin.users_with_families');
+//Route::get('/admin/users-with-families', [UsuarioFamiliarController::class, 'getAllUsersWithFamilies'])
+ //   ->name('admin.users_with_families');
 
 // Rutas para la interfaz web
 Route::prefix('admin')->group(function () {

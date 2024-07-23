@@ -35,8 +35,16 @@ class UsuarioFamiliarController extends Controller
 
     public function getAllUsersWithFamilies()
     {
-        $usuarios = UsuarioP::with(['familiares.semanasEmbarazo', 'region', 'comuna'])->get();
-        return view('admin.usuariosApp.users-with-families', compact('usuarios'));
+        try {
+            // Obtener usuarios con sus familiares, semanas de embarazo, región y comuna
+            $usuarios = UsuarioP::with(['familiares.semanasEmbarazo', 'region', 'comuna'])->get();
+
+            // Devolver los usuarios en formato JSON
+            return response()->json(['data' => $usuarios], 200);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return response()->json(['error' => 'Error al obtener los usuarios y sus familiares'], 500);
+        }
     }
 
     public function store(Request $request)
