@@ -78,4 +78,18 @@ class UsuarioPAuthController extends Controller
                                   ->exists();
     return response()->json($hasGestante);
 }
+
+    public function getCurrentUser(Request $request)
+    {
+        try {
+            $user = Auth::user(); // Utiliza Auth::user() para obtener el usuario autenticado
+            if ($user) {
+                return response()->json($user, 200);
+            } else {
+                return response()->json(['error' => 'No user authenticated'], 401);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener datos del usuario'], 500);
+        }
+    }
 }

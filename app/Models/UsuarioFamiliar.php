@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class UsuarioFamiliar extends Model
 {
@@ -39,7 +40,36 @@ class UsuarioFamiliar extends Model
     }
 
     public function tipoDeRegistro()
-{
-    return $this->belongsTo(TipoDeRegistro::class, 'tipoderegistro_id');
-}
+    {
+        return $this->belongsTo(TipoDeRegistro::class, 'tipoderegistro_id');
+    }
+
+    public function etapa()
+    {
+        return $this->belongsTo(Etapa::class, 'etapaactual_id');
+    }
+
+    public function getEdadAttribute()
+    {
+        if ($this->fecha_nacimiento) {
+            return Carbon::parse($this->fecha_nacimiento)->age;
+        }
+        return null;
+    }
+
+    public function getEtapaAttribute()
+    {
+        if ($this->tipoDeRegistro->nombre === 'gestante' || $this->tipoDeRegistro->nombre === 'Pgestante') {
+            return Etapa::where('tipo_registro_id', $this->tipoderegistro_id)
+                ->where('semanas_embarazo_minima', '<=', $this->semanasEmbarazo->semana)
+                ->where('semanas_embarazo_maxima', '>=', $this->semanasEmbarazo->semana)
+                ->first();
+        } elseif ($this->tipoDeRegistro->nombre === 'nino') {
+            return Etapa::where('tipo_registro_id', $this->tipoderegistro_id)
+                ->where('edad_minima', '<=', $this->edad)
+                ->where('edad_maxima', '>=', $this->edad)
+                ->first();
+        }
+        return null;
+    }
 }

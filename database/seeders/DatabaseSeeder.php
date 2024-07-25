@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
             RegionsTableSeeder::class,
             ComunasTableSeeder::class,
             SemanasEmbarazosSeeder::class,
+            EtapasTableSeeder::class,
+            
         ]);
     }
 }

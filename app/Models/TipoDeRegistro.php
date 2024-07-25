@@ -12,4 +12,10 @@ class TipoDeRegistro extends Model
     protected $table = 'tipos_de_registro';
 
     protected $fillable = ['nombre'];
+
+    // Define the inverse relationship with Etapa
+    public function etapas()
+    {
+        return $this->hasMany(Etapa::class, 'tipo_registro_id');
+    }
 }

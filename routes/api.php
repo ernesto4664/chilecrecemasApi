@@ -12,10 +12,13 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\TipoDeRegistroController;
 use App\Http\Controllers\EdadFamiliarController;
 use App\Http\Controllers\SemanasEmbarazoController;
+use App\Http\Controllers\EtapaController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware('auth:sanctum')->get('/user', [UsuarioPAuthController::class, 'getCurrentUser']);
 
 Route::post('/login', [UsuarioPAuthController::class, 'login']);
 Route::post('/register', [UsuarioPAuthController::class, 'register']);
@@ -59,3 +62,10 @@ Route::delete('/noticias/{noticia}', [NoticiaController::class, 'destroy']);
 // Ruta para acceder a los usuarios registrados desde la App movil y a su grupo familiar
 Route::get('/users-with-families', [UsuarioFamiliarController::class, 'getAllUsersWithFamilies'])
     ->name('api.users_with_families');
+
+//GESTION DE ETAPAS
+Route::get('etapas', [EtapaController::class, 'index']);
+Route::post('etapas', [EtapaController::class, 'store']);
+Route::get('etapas/{etapa}', [EtapaController::class, 'show']);
+Route::put('etapas/{etapa}', [EtapaController::class, 'update']);
+Route::delete('etapas/{etapa}', [EtapaController::class, 'destroy']);
