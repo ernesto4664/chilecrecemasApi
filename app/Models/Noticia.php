@@ -24,10 +24,15 @@ class Noticia extends Model
         'usuariop_id',
     ];
 
+    // Relación con la tabla `tags`
     public function tag()
     {
         return $this->belongsTo(Tag::class, 'tags_idtags', 'idtags');
     }
 
-
+    // Relación con la tabla `user_admins`
+    public function userAdmin()
+    {
+        return $this->belongsTo(UserAdmin::class, 'usuariop_id', 'id');
+    }
 }

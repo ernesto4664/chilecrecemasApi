@@ -2,6 +2,8 @@
 // api.php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 use App\Http\Controllers\UsuarioPAuthController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\ComunaController;
@@ -13,6 +15,7 @@ use App\Http\Controllers\TipoDeRegistroController;
 use App\Http\Controllers\EdadFamiliarController;
 use App\Http\Controllers\SemanasEmbarazoController;
 use App\Http\Controllers\EtapaController;
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -50,14 +53,23 @@ Route::middleware('auth:sanctum')->group(function () {
 
 /* Rutas para tags */
 Route::apiResource('/tags', TagController::class);
+Route::get('tags', [TagController::class, 'index']);
+Route::post('tags', [TagController::class, 'store']);
+Route::get('tags/{id}', [TagController::class, 'show']);
+Route::put('tags/{id}', [TagController::class, 'update']);
+Route::delete('tags/{id}', [TagController::class, 'destroy']);
 
 /* Rutas para noticias */
 Route::get('/noticias', [NoticiaController::class, 'getAllNoticias']);
 Route::get('/noticias-paginadas', [NoticiaController::class, 'getNoticiasPaginadas']);
 Route::get('/noticias/{id}', [NoticiaController::class, 'getNoticiaById']);
 Route::post('/noticias', [NoticiaController::class, 'store']);
-Route::put('/noticias/{noticia}', [NoticiaController::class, 'update']);
+Route::patch('/noticias/{noticia}', [NoticiaController::class, 'update']);
 Route::delete('/noticias/{noticia}', [NoticiaController::class, 'destroy']);
+
+
+Route::put('/noticias/{noticia}', [NoticiaController::class, 'update']);
+
 
 // Ruta para acceder a los usuarios registrados desde la App movil y a su grupo familiar
 Route::get('/users-with-families', [UsuarioFamiliarController::class, 'getAllUsersWithFamilies'])

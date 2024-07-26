@@ -26,25 +26,13 @@ class NoticiaController extends Controller
         $validatedData = $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'required|string',
-            'fecha_hora' => 'required|date',
+            'fecha_hora' => 'required|date_format:Y-m-d H:i:s',
             'status' => 'required|string',
             'privilegio' => 'required|integer',
-            'usuariop_id' => 'required|integer',
-            'tags_idtags' => 'nullable|string', // Asegúrate de que sea una cadena
+            'usuariop_id' => 'required|integer|exists:user_admins,id',
+            'tags_idtags' => 'required|integer|exists:tags,idtags',
             'imagen' => 'nullable|image|max:2048'
         ]);
-    
-        // Manejar tags_idtags
-        $tags = isset($validatedData['tags_idtags']) ? json_decode($validatedData['tags_idtags'], true) : null;
-    
-        if ($tags === null || !is_array($tags) || count($tags) === 0) {
-            // Si tags no es válido, asigna un valor predeterminado que existe en la tabla 'tags'.
-            // Puedes ajustar esto según tus necesidades. Aquí, asumimos que '1' es un ID válido.
-            $tags = 1; // O asigna el ID que sea válido en tu tabla 'tags'
-        } else {
-            // Si tags es un array, toma el primer valor (puedes ajustar esto según tus necesidades)
-            $tags = $tags[0];
-        }
     
         $noticia = new Noticia();
         $noticia->titulo = $validatedData['titulo'];
@@ -53,6 +41,7 @@ class NoticiaController extends Controller
         $noticia->status = $validatedData['status'];
         $noticia->privilegio = $validatedData['privilegio'];
         $noticia->usuariop_id = $validatedData['usuariop_id'];
+        $noticia->tags_idtags = $validatedData['tags_idtags'];
     
         // Manejar la imagen
         if ($request->hasFile('imagen')) {
@@ -60,59 +49,60 @@ class NoticiaController extends Controller
             $noticia->imagen = '/storage/' . $imagePath;
         }
     
-        $noticia->tags_idtags = $tags;
-    
         $noticia->save();
     
         return response()->json(['message' => 'Noticia creada exitosamente.']);
     }
-    
-    public function update(Request $request, Noticia $noticia)
+
+    public function update(Request $request, $id)
     {
+        \Log::info('Contenido de la solicitud (raw):', [$request->getContent()]);
+        \Log::info('Contenido de la solicitud:', [$request->all()]);
+
         $rules = [
             'titulo' => 'nullable|string|max:255',
             'descripcion' => 'nullable|string',
-            'fecha_hora' => 'nullable|date',
+            'fecha_hora' => 'nullable|date_format:Y-m-d H:i:s',
             'status' => 'nullable|string',
             'privilegio' => 'nullable|integer',
-            'usuariop_id' => 'nullable|integer',
-            'tags_idtags' => 'nullable|string'
+            'usuariop_id' => 'nullable|integer|exists:user_admins,id',
+            'tags_idtags' => 'nullable|integer|exists:tags,idtags'
         ];
-    
+
         if ($request->hasFile('imagen')) {
             $rules['imagen'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
         }
-    
+
         $validatedData = $request->validate($rules);
-    
+
+        $noticia = Noticia::findOrFail($id);
+
         \Log::info('Datos recibidos para actualización:', $validatedData);
         \Log::info('Datos actuales de la noticia antes de actualizar:', $noticia->toArray());
-    
-        // Asignar valores solo si están presentes en los datos validados
+
         foreach ($validatedData as $key => $value) {
             if ($key !== 'imagen') {
                 $noticia->$key = $value;
             }
         }
-    
-        if (isset($validatedData['tags_idtags'])) {
-            $tags = json_decode($validatedData['tags_idtags'], true);
-            $noticia->tags_idtags = !empty($tags) ? $tags : 0;
-        }
-    
+
         if ($request->hasFile('imagen')) {
             $path = $request->file('imagen')->store('public/images');
             $noticia->imagen = $path;
         }
-    
+
         \Log::info('Datos de la noticia después de asignar los valores pero antes de guardar:', $noticia->toArray());
-    
+
         $noticia->save();
-    
+
         \Log::info('Noticia guardada:', $noticia->toArray());
-    
-        return response()->json(['message' => 'Noticia actualizada exitosamente']);
+
+        return response()->json([
+            'message' => 'Noticia actualizada exitosamente',
+            'data' => $noticia
+        ]);
     }
+    
     
     public function show($id)
     {
@@ -134,7 +124,6 @@ class NoticiaController extends Controller
         return response()->json(null, 204);
     }
 
-    /*extraer todas las noticas para APP */
     public function getAllNoticias()
     {
         $noticias = Noticia::all();
@@ -142,15 +131,15 @@ class NoticiaController extends Controller
     }
 
     public function getNoticiaById($id)
-{
-    $noticia = Noticia::findOrFail($id);
-    return response()->json($noticia);
-}
+    {
+        $noticia = Noticia::findOrFail($id);
+        return response()->json($noticia);
+    }
 
-public function getNoticiasPaginadas(Request $request)
-{
-    $limit = $request->input('limit', 10);
-    $noticias = Noticia::paginate($limit);
-    return response()->json($noticias);
-}
+    public function getNoticiasPaginadas(Request $request)
+    {
+        $limit = $request->input('limit', 10);
+        $noticias = Noticia::paginate($limit);
+        return response()->json($noticias);
+    }
 }
