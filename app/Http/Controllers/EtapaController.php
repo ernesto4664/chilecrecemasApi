@@ -143,5 +143,22 @@ class EtapaController extends Controller
 
         return response()->json($usuarios, 200);
     }
+
+    public function getEtapasByTipoUsuario($tipoUsuario)
+    {
+        // Determinar el ID del tipo de registro basado en el tipo de usuario
+        $tipoRegistroIds = [];
+        if ($tipoUsuario === 'Gestante') {
+            $tipoRegistroIds = [1, 3];
+        } elseif ($tipoUsuario === 'NN') {
+            $tipoRegistroIds = [2];
+        } else {
+            return response()->json([], 404); // No encontrado si el tipo de usuario no es válido
+        }
+
+        // Obtener etapas relacionadas con los IDs del tipo de registro
+        $etapas = Etapa::whereIn('tipo_registro_id', $tipoRegistroIds)->get();
+        return response()->json($etapas);
+    }
 }
 

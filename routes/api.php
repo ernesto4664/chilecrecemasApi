@@ -84,6 +84,7 @@ Route::post('etapas', [EtapaController::class, 'store']);
 Route::get('etapas/{etapa}', [EtapaController::class, 'show']);
 Route::put('etapas/{etapa}', [EtapaController::class, 'update']);
 Route::delete('etapas/{etapa}', [EtapaController::class, 'destroy']);
+Route::get('etapas/tipoUsuario/{tipoUsuario}', [EtapaController::class, 'getEtapasByTipoUsuario']);
 
 //GESTION DE BENEFICIOS, UBICACIONES, BASEESTABLECIMIENTOS
 
