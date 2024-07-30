@@ -16,6 +16,9 @@ use App\Http\Controllers\EdadFamiliarController;
 use App\Http\Controllers\SemanasEmbarazoController;
 use App\Http\Controllers\EtapaController;
 
+use App\Http\Controllers\BeneficioController;
+use App\Http\Controllers\BaseEstablecimientoController;
+use App\Http\Controllers\UbicacionController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -81,3 +84,12 @@ Route::post('etapas', [EtapaController::class, 'store']);
 Route::get('etapas/{etapa}', [EtapaController::class, 'show']);
 Route::put('etapas/{etapa}', [EtapaController::class, 'update']);
 Route::delete('etapas/{etapa}', [EtapaController::class, 'destroy']);
+
+//GESTION DE BENEFICIOS, UBICACIONES, BASEESTABLECIMIENTOS
+
+Route::apiResource('beneficios', BeneficioController::class);
+Route::get('beneficios/etapas/{tipo_usuario}', [BeneficioController::class, 'getEtapasByTipoUsuario']);
+
+
+Route::apiResource('base-establecimientos', BaseEstablecimientoController::class);
+Route::apiResource('ubicaciones', UbicacionController::class);
