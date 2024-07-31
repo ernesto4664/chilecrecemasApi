@@ -25,7 +25,7 @@ class Beneficio extends Model
 
     public function tipoRegistro()
     {
-        return $this->belongsTo(TipoRegistro::class, 'tipo_registro_id');
+        return $this->belongsTo(TipoDeRegistro::class, 'tipo_registro_id');
     }
 
     public function etapas()
@@ -35,6 +35,6 @@ class Beneficio extends Model
 
     public function ubicaciones()
     {
-        return $this->hasMany(Ubicacion::class);
+        return $this->hasMany(Ubicacion::class, 'fk_beneficio', 'id');
     }
 }

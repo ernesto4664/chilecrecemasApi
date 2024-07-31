@@ -90,7 +90,7 @@ Route::get('etapas/tipoUsuario/{tipoUsuario}', [EtapaController::class, 'getEtap
 
 Route::apiResource('beneficios', BeneficioController::class);
 Route::get('beneficios/etapas/{tipo_usuario}', [BeneficioController::class, 'getEtapasByTipoUsuario']);
-
+Route::get('/beneficios/etapa/{etapa_id}', [BeneficioController::class, 'getBeneficiosByEtapa']);
 
 Route::apiResource('base-establecimientos', BaseEstablecimientoController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);

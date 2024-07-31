@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
             ComunasTableSeeder::class,
             SemanasEmbarazosSeeder::class,
             EtapasTableSeeder::class,
-            
+            TipoDeRegistroSeeder::class,
         ]);
     }
 }

@@ -19,4 +19,9 @@ class Etapa extends Model
         {
             return $this->belongsTo(TipoDeRegistro::class, 'tipo_registro_id');
         }
+
+        public function beneficios()
+        {
+            return $this->belongsToMany(Beneficio::class, 'beneficio_etapa', 'etapa_id', 'beneficio_id');
+        }
 }

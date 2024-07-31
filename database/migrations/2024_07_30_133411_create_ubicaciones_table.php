@@ -10,7 +10,7 @@ class CreateUbicacionesTable extends Migration
     {
         Schema::create('ubicaciones', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('beneficio_id');
+            $table->string('fk_beneficio'); // Updated field
             $table->unsignedBigInteger('region_id');
             $table->unsignedBigInteger('comuna_id');
             $table->string('tipo_establecimiento');
@@ -23,7 +23,6 @@ class CreateUbicacionesTable extends Migration
             $table->unsignedBigInteger('id_establecimiento');
             $table->timestamps();
 
-            $table->foreign('beneficio_id')->references('id')->on('beneficios')->onDelete('cascade');
             $table->foreign('region_id')->references('id')->on('regions')->onDelete('cascade');
             $table->foreign('comuna_id')->references('id')->on('comunas')->onDelete('cascade');
         });

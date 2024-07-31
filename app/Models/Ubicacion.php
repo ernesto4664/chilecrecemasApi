@@ -9,13 +9,25 @@ class Ubicacion extends Model
 {
     use HasFactory;
 
+    protected $table = 'ubicaciones';
+
     protected $fillable = [
-        'beneficio_id', 'region_id', 'comuna_id', 'tipo_establecimiento', 'nombre_establecimiento', 'direccion', 'horarios', 'contacto', 'lat', 'long', 'id_establecimiento'
+        'fk_beneficio',
+        'region_id',
+        'comuna_id',
+        'tipo_establecimiento',
+        'nombre_establecimiento',
+        'direccion',
+        'horarios',
+        'contacto',
+        'lat',
+        'long',
+        'id_establecimiento',
     ];
 
     public function beneficio()
     {
-        return $this->belongsTo(Beneficio::class);
+        return $this->belongsTo(Beneficio::class, 'fk_beneficio', 'id');
     }
 
     public function region()
@@ -27,5 +39,9 @@ class Ubicacion extends Model
     {
         return $this->belongsTo(Comuna::class);
     }
-}
 
+    public function baseEstablecimiento()
+    {
+        return $this->belongsTo(BaseEstablecimiento::class, 'id_establecimiento');
+    }
+}

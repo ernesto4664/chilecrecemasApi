@@ -2,90 +2,94 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Ubicacion;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UbicacionController extends Controller
 {
     public function index()
     {
-        $ubicaciones = Ubicacion::with(['beneficio', 'region', 'comuna'])->get();
+        $ubicaciones = Ubicacion::with(['region', 'comuna', 'baseEstablecimiento'])->get();
         return response()->json($ubicaciones);
     }
-
+    
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'beneficio_id' => 'required|integer|exists:beneficios,id',
-            'region_id' => 'required|integer|exists:regiones,id',
-            'comuna_id' => 'required|integer|exists:comunas,id',
-            'tipo_establecimiento' => 'required|string|max:255',
-            'nombre_establecimiento' => 'required|string|max:255',
-            'direccion' => 'required|string|max:255',
-            'horarios' => 'required|string|max:255',
-            'contacto' => 'required|string|max:255',
-            'lat' => 'required|numeric',
-            'long' => 'required|numeric',
-            'id_establecimiento' => 'required|integer|exists:base_establecimientos,id',
-        ]);
-
-        $ubicacion = Ubicacion::create($validatedData);
-
-        return response()->json(['message' => 'Ubicación creada exitosamente.', 'data' => $ubicacion], 201);
+        Log::info('Datos recibidos en store:', $request->all());
+    
+        try {
+            $validatedData = $request->validate([
+                'fk_beneficio' => 'required|string|max:255',
+                'region_id' => 'required|exists:regions,id',
+                'comuna_id' => 'required|exists:comunas,id',
+                'tipo_establecimiento' => 'required|string|max:255',
+                'nombre_establecimiento' => 'required|string|max:255',
+                'direccion' => 'required|string|max:255',
+                'horarios' => 'required|string|max:255',
+                'contacto' => 'required|string|max:255',
+                'lat' => 'required|string|max:255',
+                'long' => 'required|string|max:255',
+                'id_establecimiento' => 'required|exists:base_establecimientos,id',
+            ]);
+    
+            Log::info('Datos validados:', $validatedData);
+    
+            $ubicacion = Ubicacion::create($validatedData);
+            return response()->json($ubicacion, 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Error de validación:', $e->errors());
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error al almacenar la ubicación:', $e->getMessage());
+            return response()->json(['error' => 'Error al almacenar la ubicación'], 500);
+        }
     }
-
+    
     public function show($id)
     {
-        $ubicacion = Ubicacion::with(['beneficio', 'region', 'comuna'])->findOrFail($id);
+        $ubicacion = Ubicacion::with(['beneficio', 'baseEstablecimiento'])->findOrFail($id);
         return response()->json($ubicacion);
     }
-
+    
     public function update(Request $request, $id)
     {
-        \Log::info('Contenido de la solicitud (raw):', [$request->getContent()]);
-        \Log::info('Contenido de la solicitud:', [$request->all()]);
-
-        $rules = [
-            'beneficio_id' => 'nullable|integer|exists:beneficios,id',
-            'region_id' => 'nullable|integer|exists:regiones,id',
-            'comuna_id' => 'nullable|integer|exists:comunas,id',
-            'tipo_establecimiento' => 'nullable|string|max:255',
-            'nombre_establecimiento' => 'nullable|string|max:255',
-            'direccion' => 'nullable|string|max:255',
-            'horarios' => 'nullable|string|max:255',
-            'contacto' => 'nullable|string|max:255',
-            'lat' => 'nullable|numeric',
-            'long' => 'nullable|numeric',
-            'id_establecimiento' => 'nullable|integer|exists:base_establecimientos,id',
-        ];
-
-        $validatedData = $request->validate($rules);
-
-        $ubicacion = Ubicacion::findOrFail($id);
-
-        \Log::info('Datos recibidos para actualización:', $validatedData);
-        \Log::info('Datos actuales de la ubicación antes de actualizar:', $ubicacion->toArray());
-
-        foreach ($validatedData as $key => $value) {
-            $ubicacion->$key = $value;
+        Log::info('Datos recibidos en update:', $request->all());
+    
+        try {
+            $validatedData = $request->validate([
+                'fk_beneficio' => 'sometimes|required|string|max:255',
+                'region_id' => 'sometimes|required|exists:regions,id',
+                'comuna_id' => 'sometimes|required|exists:comunas,id',
+                'tipo_establecimiento' => 'sometimes|required|string|max:255',
+                'nombre_establecimiento' => 'sometimes|required|string|max:255',
+                'direccion' => 'sometimes|required|string|max:255',
+                'horarios' => 'sometimes|required|string|max:255',
+                'contacto' => 'sometimes|required|string|max:255',
+                'lat' => 'sometimes|required|string|max:255',
+                'long' => 'sometimes|required|string|max:255',
+                'id_establecimiento' => 'sometimes|required|exists:base_establecimientos,id',
+            ]);
+    
+            Log::info('Datos validados en update:', $validatedData);
+    
+            $ubicacion = Ubicacion::findOrFail($id);
+            $ubicacion->update($validatedData);
+            return response()->json($ubicacion);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Error de validación en update:', $e->errors());
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error al actualizar la ubicación:', $e->getMessage());
+            return response()->json(['error' => 'Error al actualizar la ubicación'], 500);
         }
-
-        \Log::info('Datos de la ubicación después de asignar los valores pero antes de guardar:', $ubicacion->toArray());
-
-        $ubicacion->save();
-
-        \Log::info('Ubicación guardada:', $ubicacion->toArray());
-
-        return response()->json([
-            'message' => 'Ubicación actualizada exitosamente',
-            'data' => $ubicacion
-        ]);
     }
-
+    
     public function destroy($id)
     {
-        Ubicacion::destroy($id);
+        $ubicacion = Ubicacion::findOrFail($id);
+        $ubicacion->delete();
         return response()->json(null, 204);
     }
+    
 }
-
