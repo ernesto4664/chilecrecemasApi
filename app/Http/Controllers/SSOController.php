@@ -16,24 +16,34 @@ class SSOController extends Controller
 
     public function handleProviderCallback()
     {
-        $azureUser = Socialite::driver('microsoft')->user();
+        try {
+            $azureUser = Socialite::driver('microsoft')->user();
 
-        // Obtener el rol del usuario desde el sistema SSO
-        $role = $this->getRoleFromAzureUser($azureUser);
+            // Obtener el rol del usuario desde el sistema SSO
+            $role = $this->getRoleFromAzureUser($azureUser);
 
-        // Lógica para autenticar al usuario en tu aplicación
-        $user = UserAdmin::firstOrCreate([
-            'email' => $azureUser->getEmail(),
-        ], [
-            'name' => $azureUser->getName(),
-            'microsoft_id' => $azureUser->getId(),
-            'avatar' => $azureUser->getAvatar(),
-            'role' => $role,
-        ]);
+            // Lógica para autenticar al usuario en tu aplicación
+            $user = UserAdmin::firstOrCreate([
+                'email' => $azureUser->getEmail(),
+            ], [
+                'name' => $azureUser->getName(),
+                'microsoft_id' => $azureUser->getId(),
+                'avatar' => $azureUser->getAvatar(),
+                'role' => $role,
+            ]);
 
-        Auth::login($user, true);
+            Auth::login($user, true);
 
-        return redirect()->route('admin.dashboard');
+            // Generar un token de acceso para el usuario autenticado usando Sanctum
+            $token = $user->createToken('authToken')->plainTextToken;
+
+            // Redirigir a la aplicación Angular con el token
+            return redirect()->to('http://localhost:4200/login/callback?token=' . $token);
+
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return redirect()->to('http://localhost:4200/login?error=Unable to authenticate');
+        }
     }
 
     private function getRoleFromAzureUser($azureUser)

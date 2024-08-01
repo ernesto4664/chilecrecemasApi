@@ -15,10 +15,14 @@ use App\Http\Controllers\TipoDeRegistroController;
 use App\Http\Controllers\EdadFamiliarController;
 use App\Http\Controllers\SemanasEmbarazoController;
 use App\Http\Controllers\EtapaController;
-
+use App\Http\Controllers\SSOController;
 use App\Http\Controllers\BeneficioController;
 use App\Http\Controllers\BaseEstablecimientoController;
 use App\Http\Controllers\UbicacionController;
+
+// Rutas para la autenticación SSO
+Route::get('login/sso', [SSOController::class, 'redirectToProvider'])->name('sso.login');
+Route::get('login/sso/callback', [SSOController::class, 'handleProviderCallback']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
