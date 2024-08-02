@@ -30,7 +30,7 @@ class EtapaController extends Controller
     
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
-            'descripcion' => 'required|string|max:255',
+            'descripcion' => 'string|max:1000',
             'tipo_registro_id' => 'required|integer|in:1,2,3',
             'edad_minima' => 'nullable|integer|min:0',
             'edad_maxima' => 'nullable|integer|min:0',
@@ -78,14 +78,14 @@ class EtapaController extends Controller
         Log::info('Datos recibidos para actualizar etapa: ' . json_encode($request->all()));
     
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'required|string|max:255',
-            'tipo_registro_id' => 'required|integer|in:1,2,3',
+            'nombre' => 'string|max:255',
+            'descripcion' => 'string|max:1000',
+            'tipo_registro_id' => 'integer|in:1,2,3',
             'edad_minima' => 'nullable|integer|min:0',
             'edad_maxima' => 'nullable|integer|min:0',
             'semanas_embarazo_minima' => 'nullable|integer|min:0',
             'semanas_embarazo_maxima' => 'nullable|integer|min:0',
-            'etapa' => 'required|string|max:255'
+            'etapa' => 'string|max:255'
         ]);
     
         if ($validator->fails()) {

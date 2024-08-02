@@ -10,7 +10,7 @@ class Etapa extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nombre','etapa', 'tipo_registro_id', 'edad_minima', 'edad_maxima', 'semanas_embarazo_minima', 'semanas_embarazo_maxima'
+        'nombre','etapa', 'tipo_registro_id', 'edad_minima', 'edad_maxima', 'semanas_embarazo_minima', 'semanas_embarazo_maxima', 'descripcion'
     ];
 
 
