@@ -66,11 +66,12 @@ class NoticiaController extends Controller
             'status' => 'nullable|string',
             'privilegio' => 'nullable|integer',
             'usuariop_id' => 'nullable|integer|exists:user_admins,id',
-            'tags_idtags' => 'nullable|integer|exists:tags,idtags'
+            'tags_idtags' => 'nullable|integer|exists:tags,idtags',
+            'imagen' => 'nullable|image'
         ];
 
         if ($request->hasFile('imagen')) {
-            $rules['imagen'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
+            $rules['imagen'] = 'image|mimes:jpeg,png,jpg,gif';
         }
 
         $validatedData = $request->validate($rules);

@@ -47,7 +47,7 @@ class TagController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'prioridad' => 'required|integer|between:1,5',
+            'prioridad' => 'required|integer',
         ]);
 
         $tag = Tag::findOrFail($id);
