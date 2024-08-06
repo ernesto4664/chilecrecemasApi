@@ -35,6 +35,6 @@ class Beneficio extends Model
 
     public function ubicaciones()
     {
-        return $this->hasMany(Ubicacion::class, 'fk_beneficio', 'id');
+        return $this->belongsToMany(Ubicacion::class, 'beneficio_ubicacion', 'beneficio_id', 'ubicacion_id');
     }
 }

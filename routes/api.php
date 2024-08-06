@@ -35,6 +35,7 @@ Route::post('/register', [UsuarioPAuthController::class, 'register']);
 
 /* Rutas para encontrar las regiones y las comunas */
 Route::get('/regiones', [RegionController::class, 'index']);
+Route::post('/comunas-by-region', [RegionController::class, 'getComunasByRegion']);
 Route::get('/regiones/{id}/comunas', [ComunaController::class, 'index']);
 
 /* Ruta para encontrar los tipos de registro */
@@ -95,6 +96,10 @@ Route::get('etapas/tipoUsuario/{tipoUsuario}', [EtapaController::class, 'getEtap
 Route::apiResource('beneficios', BeneficioController::class);
 Route::get('beneficios/etapas/{tipo_usuario}', [BeneficioController::class, 'getEtapasByTipoUsuario']);
 Route::get('/beneficios/etapa/{etapa_id}', [BeneficioController::class, 'getBeneficiosByEtapa']);
+Route::get('beneficios/filter', [BeneficioController::class, 'filterByRegionComuna']);
 
 Route::apiResource('base-establecimientos', BaseEstablecimientoController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);
+Route::post('/ubicaciones', [UbicacionController::class, 'store']);
+Route::post('/comunas-by-regions', [UbicacionController::class, 'getComunasByRegions']);
+Route::post('/ubicaciones-by-regions-and-comunas', [UbicacionController::class, 'getUbicacionesByRegionsAndComunas']);

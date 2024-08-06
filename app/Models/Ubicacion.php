@@ -27,7 +27,7 @@ class Ubicacion extends Model
 
     public function beneficio()
     {
-        return $this->belongsTo(Beneficio::class, 'fk_beneficio', 'id');
+        return $this->belongsToMany(Beneficio::class, 'beneficio_ubicacion', 'ubicacion_id', 'beneficio_id');
     }
 
     public function region()

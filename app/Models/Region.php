@@ -19,4 +19,9 @@ class Region extends Model
     {
         return $this->hasMany(Comuna::class, 'region_id');
     }
+
+    public function ubicaciones()
+    {
+        return $this->hasMany(Ubicacion::class, 'region_id');
+    }
 }
