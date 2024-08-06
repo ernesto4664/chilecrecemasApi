@@ -16,57 +16,132 @@ class BeneficioController extends Controller
 {
     public function index()
     {
-        $beneficios = Beneficio::with(['region', 'comuna', 'tipoRegistro', 'etapas', 'ubicaciones'])->get();
-        return response()->json($beneficios);
+        try {
+            // Cargar beneficios con sus relaciones
+            $beneficios = Beneficio::with(['etapas', 'regiones', 'comunas', 'ubicaciones'])->get();
+            return response()->json($beneficios);
+        } catch (\Exception $e) {
+            // Registrar el error
+            \Log::error('Error al obtener los beneficios', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error al obtener los beneficios', 'error' => $e->getMessage()], 500);
+        }
     }
-
     public function store(Request $request)
     {
-        // Validar los datos recibidos
-        $validatedData = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'required|string',
-            'tipo_usuario' => 'required|string',
-            'etapa_id' => 'required|array',
-            'etapa_id.*' => 'integer|exists:etapas,id',
-            'tipo_beneficio' => 'required|string',
-            'region_id' => 'required|integer|exists:regions,id',
-            'comuna_id' => 'required|integer|exists:comunas,id',
-            'ubicacion_id' => 'required|array',
-            'ubicacion_id.*' => 'integer|exists:ubicaciones,id',
-            'requisitos' => 'required|string',
-            'vigencia' => 'required|date',
-            'imagen' => 'required|image|max:2048',
-        ]);
-
-        // Manejar la imagen
-        if ($request->hasFile('imagen')) {
-            $path = $request->file('imagen')->store('images', 'public');
-            $validatedData['imagen'] = $path;
+        // Registrar el inicio del proceso
+        Log::info('Iniciando el proceso de creación de beneficio', ['request' => $request->all()]);
+    
+        try {
+            // Obtener los IDs de la solicitud
+            $etapaIds = $request->input('etapa_id', []);
+            $regionIds = $request->input('region_id', []);
+            $comunaIds = $request->input('comuna_id', []);
+            $ubicacionIds = $request->input('ubicacion_id', []);
+    
+            // Verificar si los IDs existen en sus respectivas tablas
+            $etapasExist = \DB::table('etapas')->whereIn('id', $etapaIds)->pluck('id')->toArray();
+            $regionsExist = \DB::table('regions')->whereIn('id', $regionIds)->pluck('id')->toArray();
+            $comunasExist = \DB::table('comunas')->whereIn('id', $comunaIds)->pluck('id')->toArray();
+            $ubicacionesExist = \DB::table('ubicaciones')->whereIn('id', $ubicacionIds)->pluck('id')->toArray();
+    
+            Log::info('Verificación de IDs', [
+                'etapa_ids' => $etapaIds,
+                'etapas_exist' => $etapasExist,
+                'region_ids' => $regionIds,
+                'regions_exist' => $regionsExist,
+                'comuna_ids' => $comunaIds,
+                'comunas_exist' => $comunasExist,
+                'ubicacion_ids' => $ubicacionIds,
+                'ubicaciones_exist' => $ubicacionesExist
+            ]);
+    
+            if (count($etapasExist) !== count($etapaIds) ||
+                count($regionsExist) !== count($regionIds) ||
+                count($comunasExist) !== count($comunaIds) ||
+                count($ubicacionesExist) !== count($ubicacionIds)) {
+                return response()->json(['message' => 'Uno o más IDs no existen en las tablas correspondientes'], 422);
+            }
+    
+            // Validar los datos recibidos
+            $validatedData = $request->validate([
+                'nombre' => 'required|string|max:255',
+                'descripcion' => 'required|string',
+                'tipo_usuario' => 'required|string',
+                'etapa_id' => 'required|array',
+                'etapa_id.*' => 'integer|exists:etapas,id',
+                'tipo_beneficio' => 'required|string',
+                'region_id' => 'required|array',
+                'region_id.*' => 'integer|exists:regions,id',
+                'comuna_id' => 'required|array',
+                'comuna_id.*' => 'integer|exists:comunas,id',
+                'ubicacion_id' => 'required|array',
+                'ubicacion_id.*' => 'integer|exists:ubicaciones,id',
+                'requisitos' => 'required|string',
+                'vigencia' => 'required|date',
+                'imagen' => 'nullable|file|mimes:jpg,jpeg,png',
+            ]);
+    
+            // Registrar los datos validados
+            Log::info('Datos validados', ['validatedData' => $validatedData]);
+    
+            // Manejar la imagen
+            $imagePath = null;
+            if ($request->hasFile('imagen')) {
+                $imagePath = $request->file('imagen')->store('images', 'public');
+                Log::info('Imagen guardada en', ['path' => $imagePath]);
+            }
+    
+            // Asignar tipo_registro_id basado en tipo_usuario
+            $tipoRegistroIds = [];
+            if ($validatedData['tipo_usuario'] === 'Gestante') {
+                $tipoRegistroIds = [1, 3];
+            } elseif ($validatedData['tipo_usuario'] === 'NN') {
+                $tipoRegistroIds = [2];
+            }
+            Log::info('Tipo de registro asignado', ['tipoRegistroIds' => $tipoRegistroIds]);
+    
+            // Crear múltiples registros de beneficio y guardar relaciones en la tabla pivote
+            foreach ($tipoRegistroIds as $tipoRegistroId) {
+                $beneficioData = $validatedData;
+                $beneficioData['tipo_registro_id'] = $tipoRegistroId;
+                $beneficioData['imagen'] = $imagePath;
+    
+                // Crear el beneficio con tipo_registro_id
+                $beneficio = Beneficio::create($beneficioData);
+                Log::info('Beneficio creado', ['beneficio' => $beneficio]);
+    
+                // Guardar las relaciones en la tabla pivote beneficio_etapa
+                if (!empty($validatedData['etapa_id'])) {
+                    $beneficio->etapas()->attach($validatedData['etapa_id']);
+                    Log::info('Relaciones etapa guardadas', ['etapa_id' => $validatedData['etapa_id']]);
+                }
+    
+                // Guardar las relaciones en la tabla pivote beneficio_ubicacion
+                if (!empty($validatedData['ubicacion_id'])) {
+                    $beneficio->ubicaciones()->attach($validatedData['ubicacion_id']);
+                    Log::info('Relaciones ubicación guardadas', ['ubicacion_id' => $validatedData['ubicacion_id']]);
+                }
+    
+                // Guardar relaciones en otras tablas pivote si es necesario
+                if (!empty($validatedData['region_id'])) {
+                    $beneficio->regiones()->attach($validatedData['region_id']);
+                    Log::info('Relaciones región guardadas', ['region_id' => $validatedData['region_id']]);
+                }
+    
+                if (!empty($validatedData['comuna_id'])) {
+                    $beneficio->comunas()->attach($validatedData['comuna_id']);
+                    Log::info('Relaciones comuna guardadas', ['comuna_id' => $validatedData['comuna_id']]);
+                }
+            }
+    
+            Log::info('Beneficio creado exitosamente');
+            return response()->json(['message' => 'Beneficio creado exitosamente'], 201);
+    
+        } catch (\Exception $e) {
+            // Registrar el error y mostrar mensaje
+            Log::error('Error al crear el beneficio', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error al guardar el beneficio', 'error' => $e->getMessage()], 422);
         }
-
-        // Asignar tipo_registro_id basado en tipo_usuario
-        if ($validatedData['tipo_usuario'] === 'Gestante') {
-            $validatedData['tipo_registro_id'] = [1, 3];
-        } elseif ($validatedData['tipo_usuario'] === 'NN') {
-            $validatedData['tipo_registro_id'] = [2];
-        }
-
-        // Crear múltiples registros de beneficio con tipo_registro_id y guardar relaciones en la tabla pivote
-        foreach ($validatedData['tipo_registro_id'] as $tipoRegistroId) {
-            $beneficioData = $validatedData;
-            $beneficioData['tipo_registro_id'] = $tipoRegistroId;
-
-            $beneficio = Beneficio::create($beneficioData);
-
-            // Guardar las relaciones en la tabla pivote beneficio_etapa
-            $beneficio->etapas()->attach($validatedData['etapa_id']);
-
-            // Guardar las relaciones en la tabla pivote beneficio_ubicacion
-            $beneficio->ubicaciones()->attach($validatedData['ubicacion_id']);
-        }
-
-        return response()->json(['message' => 'Beneficio creado exitosamente'], 201);
     }
 
     public function show($id)

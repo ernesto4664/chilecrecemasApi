@@ -10,17 +10,17 @@ class Beneficio extends Model
     use HasFactory;
 
     protected $fillable = [
-        'region_id', 'comuna_id', 'tipo_registro_id', 'tipo_usuario', 'tipo_beneficio', 'nombre', 'descripcion', 'requisitos', 'imagen', 'vigencia'
+        'tipo_usuario', 'tipo_registro_id', 'tipo_beneficio', 'nombre', 'descripcion', 'requisitos', 'imagen', 'vigencia'
     ];
 
-    public function region()
+    public function regiones()
     {
-        return $this->belongsTo(Region::class);
+        return $this->belongsToMany(Region::class, 'beneficio_region', 'beneficio_id', 'region_id');
     }
 
-    public function comuna()
+    public function comunas()
     {
-        return $this->belongsTo(Comuna::class);
+        return $this->belongsToMany(Comuna::class, 'beneficio_comuna', 'beneficio_id', 'comuna_id');
     }
 
     public function tipoRegistro()
