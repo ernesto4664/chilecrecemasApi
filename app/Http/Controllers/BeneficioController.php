@@ -146,8 +146,13 @@ class BeneficioController extends Controller
 
     public function show($id)
     {
-        $beneficio = Beneficio::with(['region', 'comuna', 'tipoRegistro', 'etapas', 'ubicaciones'])->findOrFail($id);
-        return response()->json($beneficio);
+        try {
+            $beneficio = Beneficio::with(['etapas', 'ubicaciones', 'regiones', 'comunas'])->findOrFail($id);
+            return response()->json($beneficio);
+        } catch (\Exception $e) {
+            Log::error('Error al obtener el beneficio: ', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error al obtener el beneficio', 'error' => $e->getMessage()], 500);
+        }
     }
 
     public function update(Request $request, $id)
@@ -233,9 +238,22 @@ class BeneficioController extends Controller
 
     public function destroy($id)
     {
-        Beneficio::destroy($id);
-        Log::info('Beneficio eliminado:', ['id' => $id]);
-        return response()->json(null, 204);
+        try {
+            $beneficio = Beneficio::findOrFail($id);
+    
+            // Eliminar relaciones en tablas pivote
+            $beneficio->comunas()->detach();
+            $beneficio->regiones()->detach();
+            $beneficio->etapas()->detach();
+            $beneficio->ubicaciones()->detach();
+    
+            // Ahora eliminar el beneficio
+            $beneficio->delete();
+    
+            return response()->json(['message' => 'Beneficio eliminado correctamente'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al eliminar el beneficio', 'error' => $e->getMessage()], 500);
+        }
     }
 
     public function getEtapasByTipoUsuario($tipo_usuario)
