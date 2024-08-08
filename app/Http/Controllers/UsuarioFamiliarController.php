@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\UsuarioFamiliar;
 use App\Models\UsuarioP;
-use App\Models\SemanasEmbarazo;
-use App\Models\EdadFamiliar;
 use App\Services\EtapaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,11 +44,21 @@ class UsuarioFamiliarController extends Controller
     {
         try {
             $usuarios = UsuarioP::with(['familiares.semanasEmbarazo', 'region', 'comuna'])->get();
+
+            foreach ($usuarios as $usuario) {
+                foreach ($usuario->familiares as $familiar) {
+                    // Obtener la etapa del familiar dinámicamente
+                    $etapa = $this->etapaService->obtenerEtapaUsuario($familiar);
+                    $familiar->etapa = $etapa ? $etapa->nombre : 'No definida';
+                }
+            }
+
             return response()->json(['data' => $usuarios], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al obtener los usuarios y sus familiares'], 500);
         }
     }
+
 
     public function store(Request $request)
     {
@@ -62,7 +70,7 @@ class UsuarioFamiliarController extends Controller
             'fecha_nacimiento' => 'required|date',
             'semanas_embarazo_id' => 'nullable|integer',
             'parentesco' => 'nullable|string|max:255',
-            'tipoderegistro_id' => 'required|integer',
+            'tipoderegistro_id' => 'required|integer|in:1,2',
             'usuarioP_id' => 'required|integer'
         ]);
 
@@ -108,7 +116,7 @@ class UsuarioFamiliarController extends Controller
             'fecha_nacimiento' => 'date',
             'semanas_embarazo_id' => 'nullable|integer',
             'parentesco' => 'nullable|string|max:255',
-            'tipoderegistro_id' => 'integer',
+            'tipoderegistro_id' => 'integer|in:1,2',
             'usuarioP_id' => 'integer'
         ]);
 

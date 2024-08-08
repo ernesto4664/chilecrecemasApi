@@ -90,7 +90,8 @@ Route::get('etapas/{etapa}', [EtapaController::class, 'show']);
 Route::put('etapas/{etapa}', [EtapaController::class, 'update']);
 Route::delete('etapas/{etapa}', [EtapaController::class, 'destroy']);
 Route::get('etapas/tipoUsuario/{tipoUsuario}', [EtapaController::class, 'getEtapasByTipoUsuario']);
-
+Route::get('/etapas/gestacion/{semanas}', [EtapaController::class, 'getEtapaBySemanas']);
+Route::get('/etapas/crecimiento/{edad}', [EtapaController::class, 'getEtapaByEdad']);
 //GESTION DE BENEFICIOS, UBICACIONES, BASEESTABLECIMIENTOS
 
 Route::apiResource('beneficios', BeneficioController::class);

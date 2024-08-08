@@ -31,12 +31,11 @@ class EtapaController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
             'descripcion' => 'string|max:1000',
-            'tipo_registro_id' => 'required|integer|in:1,2,3',
+            'tipo_registro_id' => 'required|integer|in:1,2',
             'edad_minima' => 'nullable|integer|min:0',
             'edad_maxima' => 'nullable|integer|min:0',
             'semanas_embarazo_minima' => 'nullable|integer|min:0',
-            'semanas_embarazo_maxima' => 'nullable|integer|min:0',
-            'etapa' => 'required|string|max:255'
+            'semanas_embarazo_maxima' => 'nullable|integer|min:0'
         ]);
     
         if ($validator->fails()) {
@@ -46,13 +45,6 @@ class EtapaController extends Controller
     
         try {
             $data = $validator->validated();
-    
-            // Unificar tipos de registro 1 y 3 bajo 'Gestación'
-            if (in_array($data['tipo_registro_id'], [1, 3])) {
-                $data['etapa'] = 'Gestación';
-            } elseif ($data['tipo_registro_id'] == 2) {
-                $data['etapa'] = 'Crecimiento';
-            }
     
             $etapa = Etapa::create($data);
             Log::info('Etapa creada: ' . $etapa->toJson());
@@ -80,12 +72,11 @@ class EtapaController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre' => 'string|max:255',
             'descripcion' => 'string|max:1000',
-            'tipo_registro_id' => 'integer|in:1,2,3',
+            'tipo_registro_id' => 'integer|in:1,2',
             'edad_minima' => 'nullable|integer|min:0',
             'edad_maxima' => 'nullable|integer|min:0',
             'semanas_embarazo_minima' => 'nullable|integer|min:0',
-            'semanas_embarazo_maxima' => 'nullable|integer|min:0',
-            'etapa' => 'string|max:255'
+            'semanas_embarazo_maxima' => 'nullable|integer|min:0'
         ]);
     
         if ($validator->fails()) {
@@ -95,13 +86,6 @@ class EtapaController extends Controller
     
         try {
             $data = $validator->validated();
-    
-            // Unificar tipos de registro 1 y 3 bajo 'Gestación'
-            if (in_array($data['tipo_registro_id'], [1, 3])) {
-                $data['etapa'] = 'Gestación';
-            } elseif ($data['tipo_registro_id'] == 2) {
-                $data['etapa'] = 'Crecimiento';
-            }
     
             $etapa->update($data);
             Log::info('Etapa actualizada: ' . $etapa->toJson());
@@ -131,9 +115,9 @@ class EtapaController extends Controller
         foreach ($usuarios as $usuario) {
             foreach ($usuario->familiares as $familiar) {
                 // Determinar la etapa del familiar
-                if (in_array($familiar->tipoderegistro_id, [1, 3])) {
+                if ($familiar->tipoderegistro_id === 1) {
                     $familiar->etapa = 'Gestación';
-                } elseif ($familiar->tipoderegistro_id == 2) {
+                } elseif ($familiar->tipoderegistro_id === 2) {
                     $familiar->etapa = 'Crecimiento';
                 } else {
                     $familiar->etapa = 'No definida';
@@ -149,7 +133,7 @@ class EtapaController extends Controller
         // Determinar el ID del tipo de registro basado en el tipo de usuario
         $tipoRegistroIds = [];
         if ($tipoUsuario === 'Gestante') {
-            $tipoRegistroIds = [1, 3];
+            $tipoRegistroIds = [1];
         } elseif ($tipoUsuario === 'NN') {
             $tipoRegistroIds = [2];
         } else {
@@ -160,5 +144,32 @@ class EtapaController extends Controller
         $etapas = Etapa::whereIn('tipo_registro_id', $tipoRegistroIds)->get();
         return response()->json($etapas);
     }
-}
 
+        public function getEtapaBySemanas($semanas)
+    {
+        $etapa = Etapa::where('tipo_registro_id', 1)
+                    ->where('semanas_embarazo_minima', '<=', $semanas)
+                    ->where('semanas_embarazo_maxima', '>=', $semanas)
+                    ->first();
+
+        if ($etapa) {
+            return response()->json($etapa);
+        } else {
+            return response()->json(['nombre' => 'No definida'], 404);
+        }
+    }
+
+    public function getEtapaByEdad($edad)
+    {
+        $etapa = Etapa::where('tipo_registro_id', 2)
+                    ->where('edad_minima', '<=', $edad)
+                    ->where('edad_maxima', '>=', $edad)
+                    ->first();
+
+        if ($etapa) {
+            return response()->json($etapa);
+        } else {
+            return response()->json(['nombre' => 'No definida'], 404);
+        }
+    }
+}

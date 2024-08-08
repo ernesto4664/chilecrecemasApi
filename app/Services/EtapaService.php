@@ -10,7 +10,7 @@ class EtapaService
 {
     public function obtenerEtapaUsuario(UsuarioFamiliar $familiar)
     {
-        if ($familiar->tipoderegistro_id == 1 || $familiar->tipoderegistro_id == 3) {
+        if ($familiar->tipoderegistro_id == 1) {
             $semanasEmbarazoId = $familiar->semanas_embarazo_id;
             Log::info('ID de semanas de embarazo: ' . $semanasEmbarazoId);
             if ($semanasEmbarazoId !== null) {
