@@ -26,7 +26,7 @@ class EtapaController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Datos recibidos para crear etapa: ' . json_encode($request->all()));
+      //  Log::info('Datos recibidos para crear etapa: ' . json_encode($request->all()));
     
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
@@ -39,7 +39,7 @@ class EtapaController extends Controller
         ]);
     
         if ($validator->fails()) {
-            Log::error('Error de validación al crear etapa: ' . json_encode($validator->errors()));
+         //   Log::error('Error de validación al crear etapa: ' . json_encode($validator->errors()));
             return response()->json(['errors' => $validator->errors()], 422);
         }
     
@@ -47,10 +47,10 @@ class EtapaController extends Controller
             $data = $validator->validated();
     
             $etapa = Etapa::create($data);
-            Log::info('Etapa creada: ' . $etapa->toJson());
+         //   Log::info('Etapa creada: ' . $etapa->toJson());
             return response()->json($etapa, 201);
         } catch (\Exception $e) {
-            Log::error('Error al crear etapa: ' . $e->getMessage());
+         //   Log::error('Error al crear etapa: ' . $e->getMessage());
             return response()->json(['error' => 'Error al crear etapa'], 500);
         }
     }
@@ -67,7 +67,7 @@ class EtapaController extends Controller
 
     public function update(Request $request, Etapa $etapa)
     {
-        Log::info('Datos recibidos para actualizar etapa: ' . json_encode($request->all()));
+    //    Log::info('Datos recibidos para actualizar etapa: ' . json_encode($request->all()));
     
         $validator = Validator::make($request->all(), [
             'nombre' => 'string|max:255',
@@ -80,7 +80,7 @@ class EtapaController extends Controller
         ]);
     
         if ($validator->fails()) {
-            Log::error('Error de validación al actualizar etapa: ' . json_encode($validator->errors()));
+        //    Log::error('Error de validación al actualizar etapa: ' . json_encode($validator->errors()));
             return response()->json(['errors' => $validator->errors()], 422);
         }
     
@@ -88,10 +88,10 @@ class EtapaController extends Controller
             $data = $validator->validated();
     
             $etapa->update($data);
-            Log::info('Etapa actualizada: ' . $etapa->toJson());
+          //  Log::info('Etapa actualizada: ' . $etapa->toJson());
             return response()->json($etapa, 200);
         } catch (\Exception $e) {
-            Log::error('Error al actualizar etapa: ' . $e->getMessage());
+         //   Log::error('Error al actualizar etapa: ' . $e->getMessage());
             return response()->json(['error' => 'Error al actualizar etapa'], 500);
         }
     }
@@ -100,10 +100,10 @@ class EtapaController extends Controller
     {
         try {
             $etapa->delete();
-            Log::info('Etapa eliminada: ' . $etapa->toJson());
+      //      Log::info('Etapa eliminada: ' . $etapa->toJson());
             return response()->json(['message' => 'Etapa eliminada correctamente'], 200);
         } catch (\Exception $e) {
-            Log::error('Error al eliminar etapa: ' . $e->getMessage());
+       //     Log::error('Error al eliminar etapa: ' . $e->getMessage());
             return response()->json(['error' => 'Error al eliminar etapa'], 500);
         }
     }

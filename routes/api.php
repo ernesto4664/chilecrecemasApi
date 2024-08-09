@@ -98,6 +98,7 @@ Route::apiResource('beneficios', BeneficioController::class);
 Route::get('beneficios/etapas/{tipo_usuario}', [BeneficioController::class, 'getEtapasByTipoUsuario']);
 Route::get('/beneficios/etapa/{etapa_id}', [BeneficioController::class, 'getBeneficiosByEtapa']);
 Route::get('beneficios/filter', [BeneficioController::class, 'filterByRegionComuna']);
+Route::get('familiars/{id}/benefits', [BeneficioController::class, 'getBenefitsByFamilyMember']);
 
 Route::apiResource('base-establecimientos', BaseEstablecimientoController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);

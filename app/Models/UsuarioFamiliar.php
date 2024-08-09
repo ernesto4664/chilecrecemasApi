@@ -29,6 +29,16 @@ class UsuarioFamiliar extends Model
         return $this->belongsTo(UsuarioP::class, 'usuarioP_id');
     }
 
+    public function comuna()
+    {
+        return $this->belongsTo(Comuna::class);
+    }
+
+    public function region()
+    {
+        return $this->comuna->region();
+    }
+
     public function edad()
     {
         return $this->belongsTo(EdadFamiliar::class, 'edad_id');
@@ -46,7 +56,7 @@ class UsuarioFamiliar extends Model
 
     public function etapa()
     {
-        return $this->belongsTo(Etapa::class, 'etapaactual_id');
+        return $this->belongsTo(Etapa::class);
     }
 
     public function getEdadAttribute()
@@ -71,5 +81,10 @@ class UsuarioFamiliar extends Model
                 ->first();
         }
         return null;
+    }
+
+    public function beneficios()
+    {
+        return $this->hasMany(Beneficio::class, 'tipo_registro_id', 'tipoderegistro_id');
     }
 }
