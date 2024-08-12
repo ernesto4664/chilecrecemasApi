@@ -76,7 +76,7 @@ Route::patch('/noticias/{noticia}', [NoticiaController::class, 'update']);
 Route::delete('/noticias/{noticia}', [NoticiaController::class, 'destroy']);
 
 
-Route::put('/noticias/{noticia}', [NoticiaController::class, 'update']);
+//Route::put('/noticias/{noticia}', [NoticiaController::class, 'update']);
 
 
 // Ruta para acceder a los usuarios registrados desde la App movil y a su grupo familiar
@@ -105,3 +105,15 @@ Route::apiResource('ubicaciones', UbicacionController::class);
 Route::post('/ubicaciones', [UbicacionController::class, 'store']);
 Route::post('/comunas-by-regions', [UbicacionController::class, 'getComunasByRegions']);
 Route::post('/ubicaciones-by-regions-and-comunas', [UbicacionController::class, 'getUbicacionesByRegionsAndComunas']);
+
+// Rutas públicas para consultar beneficios
+Route::get('/public-beneficios', [BeneficioController::class, 'index']);
+Route::get('/public-beneficios/filter', [BeneficioController::class, 'filterByRegionComuna']);
+Route::get('/public-beneficios/{id}', [BeneficioController::class, 'show']);
+
+// Rutas públicas para obtener regiones y comunas
+Route::get('/public-regiones', [RegionController::class, 'index']);
+Route::get('/public-regiones/{id}/comunas', [ComunaController::class, 'index']);
+
+// Ruta pública para obtener tipos de registro
+Route::get('/public-tipos-de-registro', [TipoDeRegistroController::class, 'index']);
