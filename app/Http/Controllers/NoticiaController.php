@@ -10,6 +10,8 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 Paginator::useBootstrap();
 
@@ -43,6 +45,7 @@ class NoticiaController extends Controller
         $noticia->usuariop_id = $validatedData['usuariop_id'];
         $noticia->tags_idtags = $validatedData['tags_idtags'];
     
+        
         // Manejar la imagen
         if ($request->hasFile('imagen')) {
             $imagePath = $request->file('imagen')->store('images', 'public');
@@ -56,9 +59,6 @@ class NoticiaController extends Controller
 
     public function update(Request $request, $id)
     {
-        \Log::info('Contenido de la solicitud (raw):', [$request->getContent()]);
-        \Log::info('Contenido de la solicitud:', [$request->all()]);
-
         $rules = [
             'titulo' => 'nullable|string|max:255',
             'descripcion' => 'nullable|string',
@@ -67,42 +67,56 @@ class NoticiaController extends Controller
             'privilegio' => 'nullable|integer',
             'usuariop_id' => 'nullable|integer|exists:user_admins,id',
             'tags_idtags' => 'nullable|integer|exists:tags,idtags',
-            'imagen' => 'nullable|image'
+            'imagen' => 'nullable|string' // No se valida como 'image' porque no es un archivo directo
         ];
-
-        if ($request->hasFile('imagen')) {
-            $rules['imagen'] = 'image|mimes:jpeg,png,jpg,gif';
-        }
-
+    
         $validatedData = $request->validate($rules);
-
+    
         $noticia = Noticia::findOrFail($id);
-
-        \Log::info('Datos recibidos para actualización:', $validatedData);
-        \Log::info('Datos actuales de la noticia antes de actualizar:', $noticia->toArray());
-
+    
+        // Procesar la imagen base64 si existe
+        if (!empty($validatedData['imagen'])) {
+            $noticia->imagen = $this->processBase64Image($validatedData['imagen']);
+        }
+    
+        // Actualizar los demás campos
         foreach ($validatedData as $key => $value) {
             if ($key !== 'imagen') {
                 $noticia->$key = $value;
             }
         }
-
-        if ($request->hasFile('imagen')) {
-            $path = $request->file('imagen')->store('public/images');
-            $noticia->imagen = $path;
-        }
-
-        \Log::info('Datos de la noticia después de asignar los valores pero antes de guardar:', $noticia->toArray());
-
+    
         $noticia->save();
-
-        \Log::info('Noticia guardada:', $noticia->toArray());
-
+    
         return response()->json([
             'message' => 'Noticia actualizada exitosamente',
             'data' => $noticia
         ]);
     }
+    
+    /**
+     * Procesa una imagen en base64 y la guarda en el sistema de archivos.
+     *
+     * @param string $base64Image
+     * @return string
+     */
+    protected function processBase64Image(string $base64Image): string
+    {
+        // Extraer los datos binarios de la imagen
+        $imageParts = explode(";base64,", $base64Image);
+        $imageType = Str::after($imageParts[0], 'data:image/');
+        $imageBase64 = base64_decode($imageParts[1]);
+    
+        // Generar un nombre único para la imagen
+        $imageName = uniqid() . '.' . $imageType;
+    
+        // Guardar la imagen en el sistema de archivos
+        $path = Storage::disk('public')->put('images/' . $imageName, $imageBase64);
+    
+        // Devolver la ruta pública de la imagen
+        return '/storage/images/' . $imageName;
+    }
+
     
     
     public function show($id)
