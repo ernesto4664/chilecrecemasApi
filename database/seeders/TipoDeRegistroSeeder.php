@@ -12,7 +12,6 @@ class TipoDeRegistroSeeder extends Seeder
         DB::table('tipos_de_registro')->insert([
             ['nombre' => 'gestante'],
             ['nombre' => 'nino'],
-            ['nombre' => 'Pgestante'],
         ]);
     }
 }

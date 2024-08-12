@@ -35,6 +35,7 @@ Route::post('/register', [UsuarioPAuthController::class, 'register']);
 
 /* Rutas para encontrar las regiones y las comunas */
 Route::get('/regiones', [RegionController::class, 'index']);
+Route::post('/comunas-by-region', [RegionController::class, 'getComunasByRegion']);
 Route::get('/regiones/{id}/comunas', [ComunaController::class, 'index']);
 
 /* Ruta para encontrar los tipos de registro */
@@ -89,12 +90,18 @@ Route::get('etapas/{etapa}', [EtapaController::class, 'show']);
 Route::put('etapas/{etapa}', [EtapaController::class, 'update']);
 Route::delete('etapas/{etapa}', [EtapaController::class, 'destroy']);
 Route::get('etapas/tipoUsuario/{tipoUsuario}', [EtapaController::class, 'getEtapasByTipoUsuario']);
-
+Route::get('/etapas/gestacion/{semanas}', [EtapaController::class, 'getEtapaBySemanas']);
+Route::get('/etapas/crecimiento/{edad}', [EtapaController::class, 'getEtapaByEdad']);
 //GESTION DE BENEFICIOS, UBICACIONES, BASEESTABLECIMIENTOS
 
 Route::apiResource('beneficios', BeneficioController::class);
 Route::get('beneficios/etapas/{tipo_usuario}', [BeneficioController::class, 'getEtapasByTipoUsuario']);
 Route::get('/beneficios/etapa/{etapa_id}', [BeneficioController::class, 'getBeneficiosByEtapa']);
+Route::get('beneficios/filter', [BeneficioController::class, 'filterByRegionComuna']);
+Route::get('familiars/{id}/benefits', [BeneficioController::class, 'getBenefitsByFamilyMember']);
 
 Route::apiResource('base-establecimientos', BaseEstablecimientoController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);
+Route::post('/ubicaciones', [UbicacionController::class, 'store']);
+Route::post('/comunas-by-regions', [UbicacionController::class, 'getComunasByRegions']);
+Route::post('/ubicaciones-by-regions-and-comunas', [UbicacionController::class, 'getUbicacionesByRegionsAndComunas']);

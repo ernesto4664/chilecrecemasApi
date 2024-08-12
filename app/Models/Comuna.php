@@ -20,4 +20,14 @@ class Comuna extends Model
     {
         return $this->belongsTo(Region::class, 'region_id');
     }
+
+    public function ubicaciones()
+    {
+        return $this->hasMany(Ubicacion::class, 'comuna_id');
+    }
+
+    public function beneficios()
+    {
+        return $this->belongsToMany(Beneficio::class, 'beneficio_comuna', 'comuna_id', 'beneficio_id');
+    }
 }

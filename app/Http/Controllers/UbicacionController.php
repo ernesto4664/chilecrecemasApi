@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ubicacion;
+use App\Models\Region;
+use App\Models\Comuna;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
 class UbicacionController extends Controller
@@ -16,33 +19,35 @@ class UbicacionController extends Controller
     
     public function store(Request $request)
     {
-        Log::info('Datos recibidos en store:', $request->all());
+        $validator = Validator::make($request->all(), [
+            'fk_beneficio' => 'required|string',
+            'region_id' => 'required|array',
+            'comuna_id' => 'required|array',
+            'tipo_establecimiento' => 'required|string',
+            'nombre_establecimiento' => 'required|string',
+            'direccion' => 'required|string',
+            'horarios' => 'required|string',
+            'contacto' => 'required|string',
+            'lat' => 'required|string',
+            'long' => 'required|string',
+            'codigo_madre_nuevo' => 'required|string',
+            'id_establecimiento' => 'required|integer',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+    
+        $ubicacionData = $request->all();
+        $ubicacionData['region_id'] = implode(',', $request->region_id); // Convertir a cadena
+        $ubicacionData['comuna_id'] = implode(',', $request->comuna_id); // Convertir a cadena
     
         try {
-            $validatedData = $request->validate([
-                'fk_beneficio' => 'required|string|max:255',
-                'region_id' => 'required|exists:regions,id',
-                'comuna_id' => 'required|exists:comunas,id',
-                'tipo_establecimiento' => 'required|string|max:255',
-                'nombre_establecimiento' => 'required|string|max:255',
-                'direccion' => 'required|string|max:255',
-                'horarios' => 'required|string|max:255',
-                'contacto' => 'required|string|max:255',
-                'lat' => 'required|string|max:255',
-                'long' => 'required|string|max:255',
-                'id_establecimiento' => 'required|exists:base_establecimientos,id',
-            ]);
-    
-            Log::info('Datos validados:', $validatedData);
-    
-            $ubicacion = Ubicacion::create($validatedData);
+            $ubicacion = Ubicacion::create($ubicacionData);
             return response()->json($ubicacion, 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Error de validación:', $e->errors());
-            return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            Log::error('Error al almacenar la ubicación:', $e->getMessage());
-            return response()->json(['error' => 'Error al almacenar la ubicación'], 500);
+            Log::error('Error al guardar la ubicación: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al guardar la ubicación'], 500);
         }
     }
     
@@ -91,5 +96,33 @@ class UbicacionController extends Controller
         $ubicacion->delete();
         return response()->json(null, 204);
     }
-    
+
+    public function getUbicacionesByRegionsAndComunas(Request $request)
+    {
+        $regionIds = $request->input('regionIds');
+        $comunaIds = $request->input('comunaIds');
+        
+        $ubicaciones = Ubicacion::whereIn('region_id', $regionIds)
+                                 ->whereIn('comuna_id', $comunaIds)
+                                 ->get();
+        
+        return response()->json($ubicaciones);
+    }
+
+    public function getComunasByRegions(Request $request)
+    {
+        try {
+            $regionIds = $request->input('regionIds');
+            
+            if (is_array($regionIds) && !empty($regionIds)) {
+                $comunas = Comuna::whereIn('region_id', $regionIds)->get();
+                return response()->json($comunas);
+            } else {
+                return response()->json(['error' => 'No region IDs provided'], 400);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 }
