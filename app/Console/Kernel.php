@@ -26,6 +26,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('update:family-member-data')->daily();
+        // Programa la ejecución del comando cada minuto
+        $schedule->command('notificaciones:enviar-programadas')->everyMinute();
     }
 
     /**
@@ -39,4 +41,5 @@ class Kernel extends ConsoleKernel
 
         require base_path('routes/console.php');
     }
+
 }
