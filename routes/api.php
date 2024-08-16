@@ -117,3 +117,7 @@ Route::get('/public-regiones/{id}/comunas', [ComunaController::class, 'index']);
 
 // Ruta pública para obtener tipos de registro
 Route::get('/public-tipos-de-registro', [TipoDeRegistroController::class, 'index']);
+
+// Ruta pública para las Notificaciones
+Route::apiResource('notificaciones', NotificacionController::class);
+Route::post('notificaciones/send-scheduled', [NotificacionController::class, 'sendScheduledNotifications']);
