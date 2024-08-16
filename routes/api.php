@@ -103,8 +103,8 @@ Route::get('familiars/{id}/benefits', [BeneficioController::class, 'getBenefitsB
 Route::apiResource('base-establecimientos', BaseEstablecimientoController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);
 Route::post('/ubicaciones', [UbicacionController::class, 'store']);
-Route::post('/comunas-by-regions', [UbicacionController::class, 'getComunasByRegions']);
-Route::post('/ubicaciones-by-regions-and-comunas', [UbicacionController::class, 'getUbicacionesByRegionsAndComunas']);
+Route::get('/comunas-by-regions', [UbicacionController::class, 'getComunasByRegions']);
+Route::get('/ubicaciones-by-regions-and-comunas', [UbicacionController::class, 'getUbicacionesByRegionsAndComunas']);
 
 // Rutas públicas para consultar beneficios
 Route::get('/public-beneficios', [BeneficioController::class, 'index']);
