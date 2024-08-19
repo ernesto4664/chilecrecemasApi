@@ -99,18 +99,17 @@ class UbicacionController extends Controller
 
     public function getUbicacionesByRegionsAndComunas(Request $request)
     {
-        $regionIds = $request->input('regionIds', []);
-        $comunaIds = $request->input('comunaIds', []);
-        
-        // Verifica si las listas no están vacías
-        if (count($regionIds) > 0 && count($comunaIds) > 0) {
-            $ubicaciones = Ubicacion::whereIn('region_id', $regionIds)
-                                    ->whereIn('comuna_id', $comunaIds)
-                                    ->get();
-        } else {
-            $ubicaciones = collect(); // Retorna una colección vacía si no hay criterios
+        $regionIds = (array) $request->input('regionIds', []);
+        $comunaIds = (array) $request->input('comunaIds', []);
+    
+        if (count($regionIds) === 0 || count($comunaIds) === 0) {
+            return response()->json(['message' => 'Debe proporcionar al menos una región y una comuna.'], 400);
         }
-        
+    
+        $ubicaciones = Ubicacion::whereIn('region_id', $regionIds)
+                                ->whereIn('comuna_id', $comunaIds)
+                                ->get();
+    
         return response()->json($ubicaciones);
     }
 
