@@ -20,16 +20,16 @@ class UbicacionController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'fk_beneficio' => 'required|string',
+            'fk_beneficio' => 'string',
             'region_id' => 'required|array',
             'comuna_id' => 'required|array',
-            'tipo_establecimiento' => 'required|string',
+            'tipo_establecimiento' => 'string',
             'nombre_establecimiento' => 'required|string',
-            'direccion' => 'required|string',
-            'horarios' => 'required|string',
-            'contacto' => 'required|string',
-            'lat' => 'required|string',
-            'long' => 'required|string',
+            'direccion' => 'nullable|string',
+            'horarios' => 'nullable|string',
+            'contacto' => 'nullable|string',
+            'lat' => 'nullable|string', // Cambiado a numeric si es necesario
+            'long' => 'nullable|string', // Cambiado a numeric si es necesario
             'codigo_madre_nuevo' => 'required|string',
             'id_establecimiento' => 'required|integer',
         ]);
