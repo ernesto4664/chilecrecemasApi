@@ -95,6 +95,7 @@ Route::get('/etapas/crecimiento/{edad}', [EtapaController::class, 'getEtapaByEda
 //GESTION DE BENEFICIOS, UBICACIONES, BASEESTABLECIMIENTOS
 
 Route::apiResource('beneficios', BeneficioController::class);
+Route::put('/beneficios/{id}', [BeneficioController::class, 'update']);
 Route::get('beneficios/etapas/{tipo_usuario}', [BeneficioController::class, 'getEtapasByTipoUsuario']);
 Route::get('/beneficios/etapa/{etapa_id}', [BeneficioController::class, 'getBeneficiosByEtapa']);
 Route::get('beneficios/filter', [BeneficioController::class, 'filterByRegionComuna']);
@@ -103,8 +104,9 @@ Route::get('familiars/{id}/benefits', [BeneficioController::class, 'getBenefitsB
 Route::apiResource('base-establecimientos', BaseEstablecimientoController::class);
 Route::apiResource('ubicaciones', UbicacionController::class);
 Route::post('/ubicaciones', [UbicacionController::class, 'store']);
-Route::get('/comunas-by-regions', [UbicacionController::class, 'getComunasByRegions']);
-Route::get('/ubicaciones-by-regions-and-comunas', [UbicacionController::class, 'getUbicacionesByRegionsAndComunas']);
+Route::post('/comunas-by-regions', [UbicacionController::class, 'getComunasByRegions']);
+Route::post('/ubicaciones-by-regions-and-comunas', [UbicacionController::class, 'getUbicacionesByRegionsAndComunas']);
+Route::get('/regions-with-comunas-and-ubicaciones', [UbicacionController::class, 'getAllRegionsWithComunasAndUbicaciones']);
 
 // Rutas públicas para consultar beneficios
 Route::get('/public-beneficios', [BeneficioController::class, 'index']);

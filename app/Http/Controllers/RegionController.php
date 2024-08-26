@@ -14,10 +14,17 @@ class RegionController extends Controller
         return response()->json($regiones);
     }
 
-    public function getComunasByRegion(Request $request)
+    public function getComunasByRegions(Request $request)
     {
         $regionIds = $request->input('regionIds');
-        $comunas = Comuna::whereIn('region_id', $regionIds)->get();
-        return response()->json($comunas);
+    
+        // Asegúrate de que regionIds es un array plano
+        if (is_array($regionIds) && !empty($regionIds)) {
+            $regionIds = array_map('intval', $regionIds); // Asegúrate de que todos los IDs son enteros
+            $comunas = Comuna::whereIn('region_id', $regionIds)->get(); // Asegúrate de que whereIn maneje el array correctamente
+            return response()->json($comunas);
+        } else {
+            return response()->json(['error' => 'Invalid region IDs'], 400);
+        }
     }
 }
