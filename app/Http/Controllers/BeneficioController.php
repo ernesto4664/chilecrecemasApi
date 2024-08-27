@@ -126,8 +126,6 @@ class BeneficioController extends Controller
             ], 500);
         }
     }
-    
-
 
     public function show($id)
     {
@@ -142,7 +140,7 @@ class BeneficioController extends Controller
 
     public function update(Request $request, $id)
     {
-        Log::info('Datos recibidos:', $request->all());
+        Log::info('Datos recibidos en el request:', $request->all());
     
         $rules = [
             'region_id' => 'nullable|array',
@@ -166,28 +164,74 @@ class BeneficioController extends Controller
         }
     
         $validatedData = $request->validate($rules);
-        \Log::info('Datos validados:', $validatedData);
+        Log::info('Datos validados:', $validatedData);
     
+        // Aquí es donde debes cargar el beneficio de la base de datos
         $beneficio = Beneficio::findOrFail($id);
+        Log::info('Beneficio antes de actualizar:', $beneficio->toArray());
     
-        // Actualizar campos simples
-        $beneficio->fill($validatedData);
+        // Actualizar solo si los datos no están vacíos
+        foreach ($validatedData as $key => $value) {
+            if (!is_null($value)) {
+                $beneficio->$key = $value;
+            }
+        }
     
         // Asignación de imagen
         if ($request->hasFile('imagen')) {
             if ($beneficio->imagen) {
                 Storage::disk('public')->delete(str_replace('/storage/', '', $beneficio->imagen));
             }
-    
             $imagePath = $request->file('imagen')->store('images', 'public');
             $beneficio->imagen = '/storage/' . $imagePath;
-            \Log::info('Imagen subida y asignada con path:', ['path' => $beneficio->imagen]);
+            Log::info('Imagen subida y asignada con path:', ['path' => $beneficio->imagen]);
         }
     
         $beneficio->save();
-        \Log::info('Beneficio guardado:', $beneficio->toArray());
+        Log::info('Beneficio guardado:', $beneficio->toArray());
     
         // Sincronizar relaciones
+        if (!empty($validatedData['etapa_id'])) {
+            $beneficio->etapas()->sync($validatedData['etapa_id']);
+            Log::info('Etapas sincronizadas:', ['etapas' => $validatedData['etapa_id']]);
+        } else {
+            $beneficio->etapas()->detach();
+            Log::info('Etapas removidas');
+        }
+    
+        if (!empty($validatedData['ubicacion_id'])) {
+            $beneficio->ubicaciones()->sync($validatedData['ubicacion_id']);
+            Log::info('Ubicaciones sincronizadas:', ['ubicaciones' => $validatedData['ubicacion_id']]);
+        } else {
+            $beneficio->ubicaciones()->detach();
+            Log::info('Ubicaciones removidas');
+        }
+    
+        if (!empty($validatedData['region_id'])) {
+            $beneficio->regiones()->sync($validatedData['region_id']);
+            Log::info('Regiones sincronizadas:', ['regions' => $validatedData['region_id']]);
+        } else {
+            $beneficio->regiones()->detach();
+            Log::info('Regiones removidas');
+        }
+    
+        if (!empty($validatedData['comuna_id'])) {
+            $beneficio->comunas()->sync($validatedData['comuna_id']);
+            Log::info('Comunas sincronizadas:', ['comunas' => $validatedData['comuna_id']]);
+        } else {
+            $beneficio->comunas()->detach();
+            Log::info('Comunas removidas');
+        }
+    
+        return response()->json([
+            'message' => 'Beneficio actualizado exitosamente',
+            'data' => $beneficio
+        ]);
+    }
+    
+    private function syncRelations($beneficio, $validatedData)
+    {
+        // Sincronizar etapas
         if (isset($validatedData['etapa_id'])) {
             $beneficio->etapas()->sync($validatedData['etapa_id']);
             \Log::info('Etapas sincronizadas:', ['etapas' => $validatedData['etapa_id']]);
@@ -196,6 +240,7 @@ class BeneficioController extends Controller
             \Log::info('Etapas removidas');
         }
     
+        // Sincronizar ubicaciones
         if (isset($validatedData['ubicacion_id'])) {
             $beneficio->ubicaciones()->sync($validatedData['ubicacion_id']);
             \Log::info('Ubicaciones sincronizadas:', ['ubicaciones' => $validatedData['ubicacion_id']]);
@@ -204,6 +249,7 @@ class BeneficioController extends Controller
             \Log::info('Ubicaciones removidas');
         }
     
+        // Sincronizar regiones
         if (isset($validatedData['region_id'])) {
             $beneficio->regiones()->sync($validatedData['region_id']);
             \Log::info('Regiones sincronizadas:', ['regions' => $validatedData['region_id']]);
@@ -212,6 +258,7 @@ class BeneficioController extends Controller
             \Log::info('Regiones removidas');
         }
     
+        // Sincronizar comunas
         if (isset($validatedData['comuna_id'])) {
             $beneficio->comunas()->sync($validatedData['comuna_id']);
             \Log::info('Comunas sincronizadas:', ['comunas' => $validatedData['comuna_id']]);
@@ -219,11 +266,6 @@ class BeneficioController extends Controller
             $beneficio->comunas()->detach();
             \Log::info('Comunas removidas');
         }
-    
-        return response()->json([
-            'message' => 'Beneficio actualizado exitosamente',
-            'data' => $beneficio
-        ]);
     }
     
     public function destroy($id)
