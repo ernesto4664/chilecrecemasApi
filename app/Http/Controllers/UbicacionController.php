@@ -20,16 +20,16 @@ class UbicacionController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'fk_beneficio' => 'required|string',
+            'fk_beneficio' => 'string',
             'region_id' => 'required|array',
             'comuna_id' => 'required|array',
-            'tipo_establecimiento' => 'required|string',
+            'tipo_establecimiento' => 'string',
             'nombre_establecimiento' => 'required|string',
-            'direccion' => 'required|string',
-            'horarios' => 'required|string',
-            'contacto' => 'required|string',
-            'lat' => 'required|string',
-            'long' => 'required|string',
+            'direccion' => 'nullable|string',
+            'horarios' => 'nullable|string',
+            'contacto' => 'nullable|string',
+            'lat' => 'nullable|string', // Cambiado a numeric si es necesario
+            'long' => 'nullable|string', // Cambiado a numeric si es necesario
             'codigo_madre_nuevo' => 'required|string',
             'id_establecimiento' => 'required|integer',
         ]);
@@ -97,36 +97,52 @@ class UbicacionController extends Controller
         return response()->json(null, 204);
     }
 
-    public function getUbicacionesByRegionsAndComunas(Request $request)
-    {
-        $regionIds = (array) $request->input('regionIds', []);
-        $comunaIds = (array) $request->input('comunaIds', []);
-    
-        if (count($regionIds) === 0 || count($comunaIds) === 0) {
-            return response()->json(['message' => 'Debe proporcionar al menos una región y una comuna.'], 400);
-        }
-    
-        $ubicaciones = Ubicacion::whereIn('region_id', $regionIds)
-                                ->whereIn('comuna_id', $comunaIds)
-                                ->get();
-    
-        return response()->json($ubicaciones);
-    }
-
+    // Método para obtener comunas basadas en regiones
     public function getComunasByRegions(Request $request)
     {
-        try {
-            $regionIds = $request->input('regionIds');
-            
-            if (is_array($regionIds) && !empty($regionIds)) {
-                $comunas = Comuna::whereIn('region_id', $regionIds)->get();
-                return response()->json($comunas);
-            } else {
-                return response()->json(['error' => 'No region IDs provided'], 400);
-            }
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+        $regionIds = $request->input('region_ids');
+    
+        // Verificar que $regionIds no es null o vacío
+        if (is_array($regionIds) && count($regionIds) > 0) {
+            $comunas = Comuna::whereIn('region_id', $regionIds)->get();
+            return response()->json(['comunas' => $comunas]);
+        } else {
+            // Retornar una respuesta vacía o un error
+            return response()->json(['comunas' => []], 200);
         }
     }
+    
+    // Método para obtener ubicaciones basadas en regiones y comunas
+    public function getUbicacionesByRegionsAndComunas(Request $request)
+    {
+        $regionIds = $request->input('region_ids');
+        $comunaIds = $request->input('comuna_ids');
+    
+        // Validación de entrada
+        if (is_array($regionIds) && !empty($regionIds) && is_array($comunaIds) && !empty($comunaIds)) {
+            $regionIds = array_map('intval', $regionIds);
+            $comunaIds = array_map('intval', $comunaIds);
+    
+            // Filtrar ubicaciones que coincidan con cada par de region_id y comuna_id
+            $ubicaciones = Ubicacion::whereIn('region_id', $regionIds)
+                                    ->whereIn('comuna_id', $comunaIds)
+                                    ->get();
+    
+            // Verificación adicional para asegurarse de que los resultados sean exactos
+            $ubicaciones = $ubicaciones->filter(function ($ubicacion) use ($regionIds, $comunaIds) {
+                return in_array($ubicacion->region_id, $regionIds) && in_array($ubicacion->comuna_id, $comunaIds);
+            });
+    
+            return response()->json($ubicaciones->values());
+        } else {
+            return response()->json(['error' => 'Invalid region or comuna IDs'], 400);
+        }
+    }
+
+    public function getAllRegionsWithComunasAndUbicaciones()
+{
+    $regions = Region::with(['comunas.ubicaciones'])->get();
+    return response()->json($regions);
+}
 
 }

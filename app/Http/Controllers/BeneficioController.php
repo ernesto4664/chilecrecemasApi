@@ -11,6 +11,7 @@ use App\Models\Region;
 use App\Models\Ubicacion;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Services\EtapaService;
 
 class BeneficioController extends Controller
@@ -28,107 +29,105 @@ class BeneficioController extends Controller
 
     public function store(Request $request)
     {
-       // Log::info('Iniciando el proceso de creación de beneficio', ['request' => $request->all()]);
+        // Definir reglas de validación
+        $rules = [
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'required|string',
+            'tipo_usuario' => 'required|string|in:Gestante,NN',
+            'etapa_id' => 'required|array|min:1',
+            'etapa_id.*' => 'integer|exists:etapas,id',
+            'tipo_beneficio' => 'required|string|in:Salud,OLN,PARN,MADIS,Sala Cuna,Educacion,Municipal,Otro',
+            'region_id' => 'required|array|min:1',
+            'region_id.*' => 'integer|exists:regions,id',
+            'comuna_id' => 'required|array|min:1',
+            'comuna_id.*' => 'integer|exists:comunas,id',
+            'ubicacion_id' => 'required|array|min:1',
+            'ubicacion_id.*' => 'integer|exists:ubicaciones,id',
+            'requisitos' => 'required|string',
+            'vigencia' => 'required|date',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ];
+
+        // Validar la solicitud
+        $validatedData = $request->validate($rules);
+
+        // Consolas de depuración para verificar la validación
+        Log::info('Datos validados:', $validatedData);
+
+        // Determinar tipo_registro_id basado en tipo_usuario
+        $tipoRegistroMap = [
+            'Gestante' => 1,
+            'NN' => 2,
+        ];
+        $validatedData['tipo_registro_id'] = $tipoRegistroMap[$validatedData['tipo_usuario']];
+
+        // Consolas de depuración para verificar tipo_registro_id
+        Log::info('Tipo registro ID:', ['id' => $validatedData['tipo_registro_id']]);
+
+        // Manejo de la imagen
+        if ($request->hasFile('imagen')) {
+            $imagePath = $request->file('imagen')->store('images', 'public');
+            $validatedData['imagen'] = '/storage/' . $imagePath;
+
+            // Consola de depuración para verificar la imagen
+            Log::info('Imagen cargada en:', ['path' => $validatedData['imagen']]);
+        }
+
+        // Iniciar transacción de base de datos
+        DB::beginTransaction();
 
         try {
-            $etapaIds = $request->input('etapa_id', []);
-            $regionIds = $request->input('region_id', []);
-            $comunaIds = $request->input('comuna_id', []);
-            $ubicacionIds = $request->input('ubicacion_id', []);
-
-            $etapasExist = \DB::table('etapas')->whereIn('id', $etapaIds)->pluck('id')->toArray();
-            $regionsExist = \DB::table('regions')->whereIn('id', $regionIds)->pluck('id')->toArray();
-            $comunasExist = \DB::table('comunas')->whereIn('id', $comunaIds)->pluck('id')->toArray();
-            $ubicacionesExist = \DB::table('ubicaciones')->whereIn('id', $ubicacionIds)->pluck('id')->toArray();
-
-         /*   Log::info('Verificación de IDs', [
-                'etapa_ids' => $etapaIds,
-                'etapas_exist' => $etapasExist,
-                'region_ids' => $regionIds,
-                'regions_exist' => $regionsExist,
-                'comuna_ids' => $comunaIds,
-                'comunas_exist' => $comunasExist,
-                'ubicacion_ids' => $ubicacionIds,
-                'ubicaciones_exist' => $ubicacionesExist
-            ]);*/
-
-            if (count($etapasExist) !== count($etapaIds) ||
-                count($regionsExist) !== count($regionIds) ||
-                count($comunasExist) !== count($comunaIds) ||
-                count($ubicacionesExist) !== count($ubicacionIds)) {
-                return response()->json(['message' => 'Uno o más IDs no existen en las tablas correspondientes'], 422);
-            }
-
-            $validatedData = $request->validate([
-                'nombre' => 'required|string|max:255',
-                'descripcion' => 'required|string',
-                'tipo_usuario' => 'required|string',
-                'etapa_id' => 'required|array',
-                'etapa_id.*' => 'integer|exists:etapas,id',
-                'tipo_beneficio' => 'required|string',
-                'region_id' => 'required|array',
-                'region_id.*' => 'integer|exists:regions,id',
-                'comuna_id' => 'required|array',
-                'comuna_id.*' => 'integer|exists:comunas,id',
-                'ubicacion_id' => 'required|array',
-                'ubicacion_id.*' => 'integer|exists:ubicaciones,id',
-                'requisitos' => 'required|string',
-                'vigencia' => 'required|date',
-                'imagen' => 'nullable|file|mimes:jpg,jpeg,png',
+            // Crear el beneficio
+            $beneficio = Beneficio::create([
+                'nombre' => $validatedData['nombre'],
+                'descripcion' => $validatedData['descripcion'],
+                'tipo_usuario' => $validatedData['tipo_usuario'],
+                'tipo_beneficio' => $validatedData['tipo_beneficio'],
+                'requisitos' => $validatedData['requisitos'],
+                'vigencia' => $validatedData['vigencia'],
+                'tipo_registro_id' => $validatedData['tipo_registro_id'],
+                'imagen' => $validatedData['imagen'] ?? null,
             ]);
 
-           // Log::info('Datos validados', ['validatedData' => $validatedData]);
+            // Consolas de depuración para verificar la creación del beneficio
+            Log::info('Beneficio creado:', $beneficio->toArray());
 
-            $imagePath = null;
-            if ($request->hasFile('imagen')) {
-                $imagePath = $request->file('imagen')->store('images', 'public');
-                Log::info('Imagen guardada en', ['path' => $imagePath]);
-            }
+            // Sincronizar relaciones en tablas pivote
+            $beneficio->etapas()->sync($validatedData['etapa_id']);
+            $beneficio->regiones()->sync($validatedData['region_id']);
+            $beneficio->comunas()->sync($validatedData['comuna_id']);
+            $beneficio->ubicaciones()->sync($validatedData['ubicacion_id']);
 
-            $tipoRegistroId = null;
-            if ($validatedData['tipo_usuario'] === 'Gestante') {
-                $tipoRegistroId = 1;
-            } elseif ($validatedData['tipo_usuario'] === 'NN') {
-                $tipoRegistroId = 2;
-            }
+            // Confirmar transacción
+            DB::commit();
 
-         //   Log::info('Tipo de registro asignado', ['tipoRegistroId' => $tipoRegistroId]);
+            Log::info('Beneficio guardado exitosamente');
 
-            $beneficioData = $validatedData;
-            $beneficioData['tipo_registro_id'] = $tipoRegistroId;
-            $beneficioData['imagen'] = $imagePath;
-
-            $beneficio = Beneficio::create($beneficioData);
-           // Log::info('Beneficio creado', ['beneficio' => $beneficio]);
-
-            if (!empty($validatedData['etapa_id'])) {
-                $beneficio->etapas()->attach($validatedData['etapa_id']);
-            //    Log::info('Relaciones etapa guardadas', ['etapa_id' => $validatedData['etapa_id']]);
-            }
-
-            if (!empty($validatedData['ubicacion_id'])) {
-                $beneficio->ubicaciones()->attach($validatedData['ubicacion_id']);
-             //   Log::info('Relaciones ubicación guardadas', ['ubicacion_id' => $validatedData['ubicacion_id']]);
-            }
-
-            if (!empty($validatedData['region_id'])) {
-                $beneficio->regiones()->attach($validatedData['region_id']);
-             //   Log::info('Relaciones región guardadas', ['region_id' => $validatedData['region_id']]);
-            }
-
-            if (!empty($validatedData['comuna_id'])) {
-                $beneficio->comunas()->attach($validatedData['comuna_id']);
-             //   Log::info('Relaciones comuna guardadas', ['comuna_id' => $validatedData['comuna_id']]);
-            }
-
-           // Log::info('Beneficio creado exitosamente');
-            return response()->json(['message' => 'Beneficio creado exitosamente'], 201);
+            return response()->json([
+                'message' => 'Beneficio creado exitosamente',
+                'data' => $beneficio
+            ], 201);
 
         } catch (\Exception $e) {
-           // Log::error('Error al crear el beneficio', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Error al guardar el beneficio', 'error' => $e->getMessage()], 422);
+            // Revertir transacción en caso de error
+            DB::rollBack();
+
+            // Eliminar imagen cargada si ocurre un error
+            if (isset($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
+
+            // Registrar error en logs
+            Log::error('Error al crear el beneficio: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error al crear el beneficio',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
+    
+
 
     public function show($id)
     {
@@ -143,12 +142,13 @@ class BeneficioController extends Controller
 
     public function update(Request $request, $id)
     {
-      //  Log::info('Contenido de la solicitud (raw):', [$request->getContent()]);
-      //  Log::info('Contenido de la solicitud:', [$request->all()]);
-
+        Log::info('Datos recibidos:', $request->all());
+    
         $rules = [
-            'region_id' => 'required|exists:regions,id',
-            'comuna_id' => 'nullable|integer|exists:comunas,id',
+            'region_id' => 'nullable|array',
+            'region_id.*' => 'integer|exists:regions,id',
+            'comuna_id' => 'nullable|array',
+            'comuna_id.*' => 'integer|exists:comunas,id',
             'tipo_usuario' => 'nullable|string|max:255',
             'etapa_id' => 'nullable|array',
             'etapa_id.*' => 'integer|exists:etapas,id',
@@ -160,68 +160,72 @@ class BeneficioController extends Controller
             'ubicacion_id' => 'nullable|array',
             'ubicacion_id.*' => 'integer|exists:ubicaciones,id',
         ];
-
+    
         if ($request->hasFile('imagen')) {
             $rules['imagen'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
         }
-
+    
         $validatedData = $request->validate($rules);
-
-      //  Log::info('Datos validados para actualización:', $validatedData);
-
+        \Log::info('Datos validados:', $validatedData);
+    
         $beneficio = Beneficio::findOrFail($id);
-
-     //   Log::info('Datos actuales del beneficio antes de actualizar:', $beneficio->toArray());
-
-        if (isset($validatedData['tipo_usuario'])) {
-            if ($validatedData['tipo_usuario'] === 'gestante') {
-                $validatedData['tipo_registro_id'] = 1;
-            } elseif ($validatedData['tipo_usuario'] === 'NN') {
-                $validatedData['tipo_registro_id'] = 2;
-            } else {
-                Log::error('Tipo de usuario inválido:', ['tipo_usuario' => $validatedData['tipo_usuario']]);
-                return response()->json(['error' => 'Tipo de usuario inválido.'], 400);
-            }
-        }
-
-        foreach ($validatedData as $key => $value) {
-            if ($key !== 'imagen') {
-                $beneficio->$key = $value;
-            }
-        }
-
+    
+        // Actualizar campos simples
+        $beneficio->fill($validatedData);
+    
+        // Asignación de imagen
         if ($request->hasFile('imagen')) {
             if ($beneficio->imagen) {
                 Storage::disk('public')->delete(str_replace('/storage/', '', $beneficio->imagen));
             }
-
+    
             $imagePath = $request->file('imagen')->store('images', 'public');
             $beneficio->imagen = '/storage/' . $imagePath;
-        //    Log::info('Imagen actualizada:', ['path' => $beneficio->imagen]);
+            \Log::info('Imagen subida y asignada con path:', ['path' => $beneficio->imagen]);
         }
-
-      //  Log::info('Datos del beneficio después de asignar los valores pero antes de guardar:', $beneficio->toArray());
-
+    
         $beneficio->save();
-
+        \Log::info('Beneficio guardado:', $beneficio->toArray());
+    
+        // Sincronizar relaciones
         if (isset($validatedData['etapa_id'])) {
             $beneficio->etapas()->sync($validatedData['etapa_id']);
-       //     Log::info('Etapas relacionadas:', ['etapa_id' => $validatedData['etapa_id']]);
+            \Log::info('Etapas sincronizadas:', ['etapas' => $validatedData['etapa_id']]);
+        } else {
+            $beneficio->etapas()->detach();
+            \Log::info('Etapas removidas');
         }
-
+    
         if (isset($validatedData['ubicacion_id'])) {
             $beneficio->ubicaciones()->sync($validatedData['ubicacion_id']);
-        //    Log::info('Ubicaciones relacionadas:', ['ubicacion_id' => $validatedData['ubicacion_id']]);
+            \Log::info('Ubicaciones sincronizadas:', ['ubicaciones' => $validatedData['ubicacion_id']]);
+        } else {
+            $beneficio->ubicaciones()->detach();
+            \Log::info('Ubicaciones removidas');
         }
-
-      //  Log::info('Beneficio actualizado:', $beneficio->toArray());
-
+    
+        if (isset($validatedData['region_id'])) {
+            $beneficio->regiones()->sync($validatedData['region_id']);
+            \Log::info('Regiones sincronizadas:', ['regions' => $validatedData['region_id']]);
+        } else {
+            $beneficio->regiones()->detach();
+            \Log::info('Regiones removidas');
+        }
+    
+        if (isset($validatedData['comuna_id'])) {
+            $beneficio->comunas()->sync($validatedData['comuna_id']);
+            \Log::info('Comunas sincronizadas:', ['comunas' => $validatedData['comuna_id']]);
+        } else {
+            $beneficio->comunas()->detach();
+            \Log::info('Comunas removidas');
+        }
+    
         return response()->json([
             'message' => 'Beneficio actualizado exitosamente',
             'data' => $beneficio
         ]);
     }
-
+    
     public function destroy($id)
     {
         try {
