@@ -19,6 +19,8 @@ use App\Http\Controllers\SSOController;
 use App\Http\Controllers\BeneficioController;
 use App\Http\Controllers\BaseEstablecimientoController;
 use App\Http\Controllers\UbicacionController;
+use App\Http\Controllers\NotificacionController;
+
 
 // Rutas para la autenticación SSO
 Route::get('login/sso', [SSOController::class, 'redirectToProvider'])->name('sso.login');
@@ -123,3 +125,10 @@ Route::get('/public-tipos-de-registro', [TipoDeRegistroController::class, 'index
 // Ruta pública para las Notificaciones
 Route::apiResource('notificaciones', NotificacionController::class);
 Route::post('notificaciones/send-scheduled', [NotificacionController::class, 'sendScheduledNotifications']);
+
+
+Route::get('/notificaciones', [NotificacionController::class, 'index']);
+Route::post('/notificaciones', [NotificacionController::class, 'store']);
+Route::get('/notificaciones/{id}', [NotificacionController::class, 'show']);
+Route::put('/notificaciones/{id}', [NotificacionController::class, 'update']);
+Route::delete('/notificaciones/{id}', [NotificacionController::class, 'destroy']);
